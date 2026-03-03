@@ -22,25 +22,29 @@ This codebase now uses **token-based authentication** integrated with your backe
 ✅ **Automatic token injection** - All requests automatically authenticated  
 ✅ **401 auto-logout** - Invalid/expired tokens trigger automatic logout  
 ✅ **API response unwrapping** - Transparent handling of `{ success, data }` wrapper  
-✅ **Type-safe** - Full TypeScript coverage with OpenAPI-generated types  
+✅ **Type-safe** - Full TypeScript coverage with OpenAPI-generated types
 
 ## API Endpoints
 
 All endpoints follow the structure defined in `openapi.json`:
 
 ### Authentication
+
 - `POST /api/v1/auth/fetch/token` - Exchange Google ID token for JWT
 - `POST /api/v1/auth/logout` - Invalidate session
 - `GET /api/v1/auth/check-user` - Check authentication status
 
 ### User Management
+
 - `GET /api/v1/users/me` - Get current user profile
 - `PUT /api/v1/users/me` - Update user profile
 
 ### Dashboard
+
 - `GET /api/v1/dashboard` - Get dashboard data (progress + logs)
 
 ### Food Logs
+
 - `GET /api/v1/food-logs` - List food logs
 - `POST /api/v1/food-logs` - Create food log
 - `GET /api/v1/food-logs/:id` - Get specific food log
@@ -66,6 +70,7 @@ VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 Your backend API should:
 
 1. **Accept Google ID tokens** at `POST /api/v1/auth/fetch/token`
+
    ```json
    Request: { "id_token": "eyJhbGc..." }
    Response: {
@@ -81,11 +86,16 @@ Your backend API should:
 2. **Validate JWT tokens** - Check `Authorization: Bearer {token}` header
 
 3. **Return wrapped responses** - All responses follow:
+
    ```json
    {
      "success": true,
-     "data": { /* actual data */ },
-     "meta": { /* optional pagination */ }
+     "data": {
+       /* actual data */
+     },
+     "meta": {
+       /* optional pagination */
+     }
    }
    ```
 
@@ -94,16 +104,19 @@ Your backend API should:
 ## Key Files Changed
 
 ### Types & API Layer
+
 - `packages/types/src/index.ts` - Updated types to match OpenAPI spec
 - `packages/api/src/axios.ts` - Added Bearer token injection & response unwrapping
 - `packages/api/src/baseApi.ts` - Updated RTK Query base with token support
 
 ### Auth Core
+
 - `packages/auth-core/src/authService.ts` - Token-based auth service
 - `packages/auth-core/src/tokenManager.ts` - In-memory token management
 - `packages/auth-core/src/authTypes.ts` - Updated auth type exports
 
 ### Features
+
 - `packages/features/src/auth/authSlice.ts` - Updated Redux slice for token flow
 - `packages/features/src/auth/authApi.ts` - RTK Query endpoints for auth
 - `packages/features/src/auth/useAuth.ts` - Updated hook for token-based auth
@@ -111,6 +124,7 @@ Your backend API should:
 - `packages/features/src/dashboard/index.ts` - **NEW** - Dashboard exports
 
 ### UI Components
+
 - `apps/web/src/pages/DashboardPage.tsx` - Updated to use new User field names
 
 ## Usage Examples
@@ -122,7 +136,7 @@ import { GoogleLoginButton, useAuth } from "@snackro/features";
 
 function LoginPage() {
   const { isAuthenticated } = useAuth();
-  
+
   return (
     <GoogleLoginButton
       onSuccess={() => navigate("/dashboard")}
@@ -135,23 +149,26 @@ function LoginPage() {
 ### Protected API Calls
 
 ```tsx
-import { useGetDashboardQuery, useCreateFoodLogMutation } from "@snackro/features";
+import {
+  useGetDashboardQuery,
+  useCreateFoodLogMutation,
+} from "@snackro/features";
 
 function Dashboard() {
   // Automatically authenticated with Bearer token
   const { data, isLoading } = useGetDashboardQuery();
   const [createLog] = useCreateFoodLogMutation();
-  
+
   const handleAddLog = async () => {
     await createLog({
       food_name: "Chicken Breast",
       protein_grams: 30,
       quantity: 1,
       unit: "piece",
-      log_date: "2026-03-03"
+      log_date: "2026-03-03",
     });
   };
-  
+
   return <div>{/* ... */}</div>;
 }
 ```
@@ -182,21 +199,25 @@ const result = await apiPost("/api/v1/food-logs", { ...logData });
 ## Troubleshooting
 
 ### "401 Unauthorized" after login
+
 - Check backend is validating the JWT correctly
 - Verify `Authorization: Bearer {token}` header is present
 - Check token expiration time
 
 ### "Network Error"
+
 - Verify `VITE_API_URL` points to running backend
 - Check CORS settings on backend (allow your frontend origin)
 - Ensure backend API is accessible
 
 ### Google login fails immediately
+
 - Verify `VITE_GOOGLE_CLIENT_ID` is correct
 - Check Google Cloud Console OAuth settings
 - Ensure authorized JavaScript origins include your frontend URL
 
 ### API returns wrapped responses but data is undefined
+
 - Backend might not be using the `{ success, data }` wrapper
 - Check axios interceptor is unwrapping correctly
 - Verify response structure matches OpenAPI spec
@@ -206,11 +227,13 @@ const result = await apiPost("/api/v1/food-logs", { ...logData });
 ### Changes from Previous Implementation
 
 **Before** (Cookie-based):
+
 - Used HTTP-only cookies for refresh tokens
 - Auto-refresh on 401
 - Session restoration from cookies
 
 **Now** (Token-based):
+
 - JWT access tokens in memory
 - No automatic refresh (backend handles token lifetime)
 - Session restoration requires valid token
@@ -219,10 +242,19 @@ const result = await apiPost("/api/v1/food-logs", { ...logData });
 
 ```typescript
 // Old format
-{ name, picture, createdAt, updatedAt }
+{
+  (name, picture, createdAt, updatedAt);
+}
 
 // New format (snake_case to match API)
-{ full_name, avatar_url, daily_protein_target, preferences, created_at, updated_at }
+{
+  (full_name,
+    avatar_url,
+    daily_protein_target,
+    preferences,
+    created_at,
+    updated_at);
+}
 ```
 
 ## Security Best Practices
@@ -231,7 +263,7 @@ const result = await apiPost("/api/v1/food-logs", { ...logData });
 ✅ **HTTPS in production** - Always use HTTPS for token transmission  
 ✅ **Short token lifetime** - Backend should use 15-60 minute expiration  
 ✅ **Secure backend** - Validate all tokens server-side  
-✅ **CORS configured** - Only allow trusted frontend origins  
+✅ **CORS configured** - Only allow trusted frontend origins
 
 ## Next Steps
 
@@ -244,6 +276,7 @@ const result = await apiPost("/api/v1/food-logs", { ...logData });
 ## Support
 
 For issues or questions about this integration:
+
 - Check the OpenAPI spec in `openapi.json`
 - Review network requests in browser DevTools
 - Verify backend logs for authentication errors

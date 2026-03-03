@@ -7,6 +7,7 @@ I've successfully integrated **token-based Google authentication** that is fully
 ## 🔐 Key Features
 
 ### Security
+
 - ✅ JWT Bearer tokens with automatic header injection
 - ✅ In-memory token storage (no localStorage vulnerabilities)
 - ✅ Automatic logout on 401 responses
@@ -14,6 +15,7 @@ I've successfully integrated **token-based Google authentication** that is fully
 - ✅ Type-safe with full TypeScript coverage
 
 ### Architecture
+
 - ✅ Token-based auth via `/api/v1/auth/fetch/token` endpoint
 - ✅ Automatic API response unwrapping (`{ success, data }` → `data`)
 - ✅ Redux Toolkit with RTK Query for state management
@@ -21,6 +23,7 @@ I've successfully integrated **token-based Google authentication** that is fully
 - ✅ Comprehensive error handling
 
 ### API Integration
+
 - ✅ All endpoints match OpenAPI spec exactly
 - ✅ Proper `/api/v1` prefix handling
 - ✅ Snake_case field names (full_name, avatar_url, etc.)
@@ -30,6 +33,7 @@ I've successfully integrated **token-based Google authentication** that is fully
 ## 📦 Files Modified (16 files)
 
 ### Core Changes
+
 1. **Types** (`packages/types/src/index.ts`)
    - Updated User model with protein tracking fields
    - Added FetchTokenRequest/Response types
@@ -64,6 +68,7 @@ I've successfully integrated **token-based Google authentication** that is fully
 ### 1. Configure Environment
 
 Create `.env.local`:
+
 ```bash
 VITE_API_URL=http://localhost:8000
 VITE_GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
@@ -79,6 +84,7 @@ npm run dev
 ### 3. Login Flow
 
 The authentication now works like this:
+
 1. User clicks "Sign in with Google"
 2. Google OAuth returns ID token
 3. Client sends to `POST /api/v1/auth/fetch/token`
@@ -105,33 +111,38 @@ const [createLog] = useCreateFoodLogMutation();
 ## 🔄 Breaking Changes
 
 ### User Object Structure
+
 ```typescript
 // OLD
-{ name, picture, createdAt, updatedAt }
+{
+  (name, picture, createdAt, updatedAt);
+}
 
 // NEW (matches API spec)
 {
-  full_name,
-  avatar_url,
-  daily_protein_target,
-  preferences,
-  created_at,
-  updated_at
+  (full_name,
+    avatar_url,
+    daily_protein_target,
+    preferences,
+    created_at,
+    updated_at);
 }
 ```
 
 ### API Endpoints
+
 ```typescript
 // OLD
-POST /auth/google
-GET /auth/me
+POST / auth / google;
+GET / auth / me;
 
 // NEW
-POST /api/v1/auth/fetch/token
-GET /api/v1/users/me
+POST / api / v1 / auth / fetch / token;
+GET / api / v1 / users / me;
 ```
 
 ### Authentication Method
+
 ```typescript
 // OLD: Cookie-based with auto-refresh
 - HTTP-only cookies
@@ -147,6 +158,7 @@ GET /api/v1/users/me
 ## 📚 Documentation
 
 I've created **comprehensive documentation**:
+
 - **AUTH_INTEGRATION.md** - Complete integration guide with:
   - Architecture overview
   - Security features
@@ -167,6 +179,7 @@ I've created **comprehensive documentation**:
 ## 🧪 Testing Checklist
 
 Before deploying to production:
+
 - [ ] Backend API running on correct port
 - [ ] Google OAuth credentials configured
 - [ ] CORS enabled for your frontend origin
@@ -178,6 +191,7 @@ Before deploying to production:
 ## 🔧 Backend Requirements
 
 Your backend should:
+
 1. Accept Google ID tokens at `POST /api/v1/auth/fetch/token`
 2. Return JWT access token + user data
 3. Validate Bearer tokens on protected routes
@@ -189,7 +203,7 @@ Your backend should:
 ✅ **Auth**: fetch-token, logout, check-user  
 ✅ **Users**: get profile, update profile  
 ✅ **Dashboard**: get dashboard data  
-✅ **Food Logs**: CRUD operations  
+✅ **Food Logs**: CRUD operations
 
 All endpoints automatically authenticated with Bearer token!
 

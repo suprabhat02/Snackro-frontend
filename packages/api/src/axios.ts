@@ -63,12 +63,12 @@ export function setForceLogoutHandler(handler: () => void) {
 // ─── Request Interceptor ─────────────────────────────────────
 apiClient.interceptors.request.use(
   (config) => {
-    ensureBaseURL(config);    
+    ensureBaseURL(config);
     // Add Authorization header if token exists
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
-        return config;
+    return config;
   },
   (error: AxiosError) => {
     return Promise.reject(error);
@@ -79,7 +79,12 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => {
     // Unwrap API response wrapper if present
-    if (response.data && typeof response.data === 'object' && 'success' in response.data && 'data' in response.data) {
+    if (
+      response.data &&
+      typeof response.data === "object" &&
+      "success" in response.data &&
+      "data" in response.data
+    ) {
       return { ...response, data: response.data.data };
     }
     return response;
@@ -93,7 +98,7 @@ apiClient.interceptors.response.use(
       }
     }
     return Promise.reject(normalizeApiError(error));
-  }
+  },
 );
 
 // ─── Error Normalizer ────────────────────────────────────────

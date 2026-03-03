@@ -18,9 +18,11 @@ const AUTH_ENDPOINTS = {
  * Exchange Google ID token for JWT access token
  * This is the primary authentication method
  */
-export async function loginWithGoogle(idToken: string): Promise<FetchTokenResponse> {
-  return apiPost<FetchTokenResponse>(AUTH_ENDPOINTS.FETCH_TOKEN, { 
-    id_token: idToken 
+export async function loginWithGoogle(
+  idToken: string,
+): Promise<FetchTokenResponse> {
+  return apiPost<FetchTokenResponse>(AUTH_ENDPOINTS.FETCH_TOKEN, {
+    id_token: idToken,
   });
 }
 
@@ -34,7 +36,10 @@ export async function logout(): Promise<void> {
 /**
  * Check authentication status
  */
-export async function checkUser(): Promise<{ authenticated: boolean; user?: User }> {
+export async function checkUser(): Promise<{
+  authenticated: boolean;
+  user?: User;
+}> {
   return apiGet(AUTH_ENDPOINTS.CHECK_USER);
 }
 

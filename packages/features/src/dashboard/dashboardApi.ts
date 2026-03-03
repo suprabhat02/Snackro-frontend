@@ -51,7 +51,10 @@ export const dashboardApi = baseApi.injectEndpoints({
       providesTags: ["Dashboard"],
     }),
 
-    getFoodLogs: builder.query<FoodLogResponse[], { start_date?: string; end_date?: string }>({
+    getFoodLogs: builder.query<
+      FoodLogResponse[],
+      { start_date?: string; end_date?: string }
+    >({
       query: (params) => ({
         url: "/api/v1/food-logs",
         params,

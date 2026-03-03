@@ -39,7 +39,12 @@ const baseQueryWithAuth: BaseQueryFn<
   let result = await baseQuery(args, api, extraOptions);
 
   // Unwrap API response if wrapped with { success, data }
-  if (result.data && typeof result.data === 'object' && 'success' in result.data && 'data' in result.data) {
+  if (
+    result.data &&
+    typeof result.data === "object" &&
+    "success" in result.data &&
+    "data" in result.data
+  ) {
     result.data = (result.data as any).data;
   }
 

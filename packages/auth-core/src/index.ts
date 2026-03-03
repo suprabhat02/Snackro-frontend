@@ -1,4 +1,9 @@
-export { loginWithGoogle, refreshSession, logout, getMe } from "./authService";
+export {
+  loginWithGoogle,
+  logout,
+  getUserProfile,
+  checkUser,
+} from "./authService";
 export {
   setAccessToken,
   getAccessToken,
@@ -12,8 +17,11 @@ export type {
   User,
   AuthSession,
   GoogleCredentialResponse,
+  FetchTokenRequest,
+  FetchTokenResponse,
   LoginRequest,
   LoginResponse,
   RefreshResponse,
   AuthMeResponse,
+  UpdateProfileRequest,
 } from "./authTypes";

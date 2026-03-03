@@ -10,7 +10,11 @@
 
 import { getAccessToken as getToken } from "@snackro/api/axios";
 
-export { setAccessToken, getAccessToken, clearAccessToken } from "@snackro/api/axios";
+export {
+  setAccessToken,
+  getAccessToken,
+  clearAccessToken,
+} from "@snackro/api/axios";
 
 /**
  * Check if we have an access token

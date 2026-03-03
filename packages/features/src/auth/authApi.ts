@@ -2,7 +2,11 @@
  * Auth API — RTK Query endpoints for authentication
  */
 import { baseApi } from "@snackro/api/baseApi";
-import type { FetchTokenResponse, User, UpdateProfileRequest } from "@snackro/auth-core";
+import type {
+  FetchTokenResponse,
+  User,
+  UpdateProfileRequest,
+} from "@snackro/auth-core";
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({

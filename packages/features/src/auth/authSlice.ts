@@ -31,7 +31,7 @@ export const googleLogin = createAsyncThunk<
   try {
     const response = await loginWithGoogle(idToken);
     setAccessToken(response.access_token);
-    
+
     // Transform user data from API format to app format
     const user: User = {
       id: response.user.id || "",
@@ -43,7 +43,7 @@ export const googleLogin = createAsyncThunk<
       created_at: response.user.created_at || new Date().toISOString(),
       updated_at: response.user.updated_at || new Date().toISOString(),
     };
-    
+
     return user;
   } catch (error) {
     clearAccessToken();
