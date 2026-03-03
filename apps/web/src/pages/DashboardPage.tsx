@@ -44,10 +44,10 @@ export function DashboardPage() {
             </Stack>
 
             <Stack direction="row" align="center" gap="var(--space-3)">
-              {user?.picture && (
+              {user?.avatar_url && (
                 <img
-                  src={user.picture}
-                  alt={user.name}
+                  src={user.avatar_url}
+                  alt={user.full_name}
                   style={{
                     width: 32,
                     height: 32,
@@ -75,7 +75,7 @@ export function DashboardPage() {
           <Stack gap="var(--space-5)">
             <Stack gap="var(--space-2)">
               <Typography variant="h2">
-                Welcome back{user?.name ? `, ${user.name}` : ""}! 👋
+                Welcome back{user?.full_name ? `, ${user.full_name}` : ""}! 👋
               </Typography>
               <Typography variant="body" color="var(--color-text-secondary)">
                 You are logged in as {user?.email}

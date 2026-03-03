@@ -9,7 +9,7 @@ import {
 import {
   loginWithGoogle,
   logout as logoutService,
-  getMe,
+  getUserProfile,
   setAccessToken,
   clearAccessToken,
   initialAuthState,
@@ -21,7 +21,7 @@ import { baseApi } from "@snackro/api/baseApi";
 
 /**
  * Login with Google ID Token
- * Sends token to backend, receives user + access token
+ * Sends token to backend, receives JWT access token + user data
  */
 export const googleLogin = createAsyncThunk<
   User,
@@ -30,8 +30,21 @@ export const googleLogin = createAsyncThunk<
 >("auth/googleLogin", async (idToken, { rejectWithValue }) => {
   try {
     const response = await loginWithGoogle(idToken);
-    setAccessToken(response.accessToken);
-    return response.user;
+    setAccessToken(response.access_token);
+    
+    // Transform user data from API format to app format
+    const user: User = {
+      id: response.user.id || "",
+      email: response.user.email || "",
+      full_name: response.user.full_name || response.user.name || "",
+      avatar_url: response.user.avatar_url || response.user.picture || null,
+      daily_protein_target: response.user.daily_protein_target || 100,
+      preferences: response.user.preferences || {},
+      created_at: response.user.created_at || new Date().toISOString(),
+      updated_at: response.user.updated_at || new Date().toISOString(),
+    };
+    
+    return user;
   } catch (error) {
     clearAccessToken();
     const message = error instanceof Error ? error.message : "Login failed";
@@ -41,7 +54,7 @@ export const googleLogin = createAsyncThunk<
 
 /**
  * Restore session on app load
- * Calls /auth/me to check if cookies contain a valid session
+ * Calls /api/v1/users/me to check if token is valid
  */
 export const restoreSession = createAsyncThunk<
   User,
@@ -49,9 +62,10 @@ export const restoreSession = createAsyncThunk<
   { rejectValue: string }
 >("auth/restoreSession", async (_, { rejectWithValue }) => {
   try {
-    const response = await getMe();
-    return response.user;
+    const user = await getUserProfile();
+    return user;
   } catch (error) {
+    clearAccessToken();
     const message = error instanceof Error ? error.message : "Session expired";
     return rejectWithValue(message);
   }
@@ -70,7 +84,7 @@ export const logoutUser = createAsyncThunk<void, void, { rejectValue: string }>(
     }
     clearAccessToken();
     dispatch(baseApi.util.resetApiState());
-    return rejectWithValue(""); // Clear state regardless
+    return;
   },
 );
 

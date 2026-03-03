@@ -2,11 +2,11 @@
  * @snackro/api - Enterprise Axios instance
  *
  * Features:
- * - Automatic credential handling (HTTP-only cookies)
+ * - JWT Bearer token authentication with Authorization header
  * - Request/response interceptors
- * - Automatic 401 → refresh → retry flow
- * - Refresh lock to prevent concurrent refresh races
+ * - Automatic 401 handling
  * - Global error normalization
+ * - API response unwrapping
  */
 import axios, {
   AxiosError,
@@ -14,12 +14,12 @@ import axios, {
   InternalAxiosRequestConfig,
 } from "axios";
 import { getConfig } from "@snackro/config/env";
-import type { ApiError } from "@snackro/types";
+import type { ApiError, ApiResponse } from "@snackro/types";
 
 // ─── Create Axios Instance ───────────────────────────────────
 const apiClient = axios.create({
   baseURL: "", // Set lazily to avoid env access at module scope
-  withCredentials: true, // Always send HTTP-only cookies
+
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -38,22 +38,19 @@ function ensureBaseURL(config: InternalAxiosRequestConfig) {
   }
 }
 
-// ─── Refresh Lock ─────────────────────────────────────────────
-let isRefreshing = false;
-let failedQueue: Array<{
-  resolve: (value?: unknown) => void;
-  reject: (reason?: unknown) => void;
-}> = [];
+// ─── Token Storage ───────────────────────────────────────────
+let accessToken: string | null = null;
 
-function processQueue(error: AxiosError | null) {
-  failedQueue.forEach((promise) => {
-    if (error) {
-      promise.reject(error);
-    } else {
-      promise.resolve();
-    }
-  });
-  failedQueue = [];
+export function setAccessToken(token: string) {
+  accessToken = token;
+}
+
+export function getAccessToken(): string | null {
+  return accessToken;
+}
+
+export function clearAccessToken() {
+  accessToken = null;
 }
 
 // ─── Logout callback (set by auth-core) ──────────────────────
@@ -66,8 +63,12 @@ export function setForceLogoutHandler(handler: () => void) {
 // ─── Request Interceptor ─────────────────────────────────────
 apiClient.interceptors.request.use(
   (config) => {
-    ensureBaseURL(config);
-    return config;
+    ensureBaseURL(config);    
+    // Add Authorization header if token exists
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
+        return config;
   },
   (error: AxiosError) => {
     return Promise.reject(error);
@@ -76,46 +77,23 @@ apiClient.interceptors.request.use(
 
 // ─── Response Interceptor ────────────────────────────────────
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Unwrap API response wrapper if present
+    if (response.data && typeof response.data === 'object' && 'success' in response.data && 'data' in response.data) {
+      return { ...response, data: response.data.data };
+    }
+    return response;
+  },
   async (error: AxiosError<ApiError>) => {
-    const originalRequest = error.config as InternalAxiosRequestConfig & {
-      _retry?: boolean;
-    };
-
-    // If not a 401, or already retried, or refresh endpoint itself — reject
-    if (
-      error.response?.status !== 401 ||
-      originalRequest._retry ||
-      originalRequest.url?.includes("/auth/refresh")
-    ) {
-      return Promise.reject(normalizeApiError(error));
-    }
-
-    // Lock: If already refreshing, queue this request
-    if (isRefreshing) {
-      return new Promise((resolve, reject) => {
-        failedQueue.push({ resolve, reject });
-      }).then(() => apiClient(originalRequest));
-    }
-
-    originalRequest._retry = true;
-    isRefreshing = true;
-
-    try {
-      await apiClient.post("/auth/refresh");
-      processQueue(null);
-      return apiClient(originalRequest);
-    } catch (refreshError) {
-      processQueue(refreshError as AxiosError);
-      // Force logout — refresh token is expired
+    // If 401, clear token and trigger logout
+    if (error.response?.status === 401) {
+      clearAccessToken();
       if (onForceLogout) {
         onForceLogout();
       }
-      return Promise.reject(refreshError);
-    } finally {
-      isRefreshing = false;
     }
-  },
+    return Promise.reject(normalizeApiError(error));
+  }
 );
 
 // ─── Error Normalizer ────────────────────────────────────────
@@ -187,5 +165,13 @@ export async function apiDelete<T>(
   return response.data;
 }
 
-export { apiClient };
+export async function apiPatch<T>(
+  url: string,
+  data?: unknown,
+  config?: AxiosRequestConfig,
+): Promise<T> {
+  const response = await apiClient.patch<T>(url, data, config);
+  return response.data;
+}
+
 export default apiClient;

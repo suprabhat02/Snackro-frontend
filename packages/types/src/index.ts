@@ -7,10 +7,12 @@
 export interface User {
   id: string;
   email: string;
-  name: string;
-  picture: string;
-  createdAt: string;
-  updatedAt: string;
+  full_name: string;
+  avatar_url: string | null;
+  daily_protein_target: number;
+  preferences: Record<string, string | number | boolean>;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AuthSession {
@@ -26,25 +28,43 @@ export interface GoogleCredentialResponse {
 }
 
 export interface AuthTokens {
-  accessToken: string;
-  /** Refresh token is never exposed to client — HTTP-only cookie */
+  access_token: string;
+  token_type: string;
+}
+
+// API Request/Response types matching OpenAPI spec
+export interface FetchTokenRequest {
+  id_token: string;
+}
+
+export interface FetchTokenResponse {
+  access_token: string;
+  token_type: string;
+  user: Record<string, any>;
 }
 
 export interface LoginRequest {
-  idToken: string;
+  id_token: string;
 }
 
 export interface LoginResponse {
-  user: User;
-  accessToken: string;
+  access_token: string;
+  token_type: string;
+  user: Record<string, any>;
 }
 
 export interface RefreshResponse {
-  accessToken: string;
+  csrf_token: string;
 }
 
 export interface AuthMeResponse {
   user: User;
+}
+
+export interface UpdateProfileRequest {
+  full_name: string;
+  daily_protein_target: number;
+  preferences?: Record<string, string | number | boolean>;
 }
 
 // ─── API Types ────────────────────────────────────────────────
@@ -55,17 +75,23 @@ export interface ApiError {
   details?: Record<string, unknown>;
 }
 
+// Response wrapper matching OpenAPI spec
 export interface ApiResponse<T> {
+  success: boolean;
   data: T;
-  message?: string;
-  timestamp: string;
+  meta?: PaginationMeta | null;
 }
 
-export interface PaginatedResponse<T> extends ApiResponse<T[]> {
-  total: number;
+export interface PaginationMeta {
   page: number;
-  pageSize: number;
-  totalPages: number;
+  page_size: number;
+  total: number;
+}
+
+export interface PaginatedResponse<T> {
+  success: boolean;
+  data: T[];
+  meta: PaginationMeta;
 }
 
 export interface PaginationParams {

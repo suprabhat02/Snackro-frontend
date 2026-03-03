@@ -6,10 +6,13 @@ export type {
   User,
   AuthSession,
   GoogleCredentialResponse,
+  FetchTokenRequest,
+  FetchTokenResponse,
   LoginRequest,
   LoginResponse,
   RefreshResponse,
   AuthMeResponse,
+  UpdateProfileRequest,
 } from "@snackro/types";
 
 /** Auth state for Redux slice */

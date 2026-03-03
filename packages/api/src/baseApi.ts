@@ -8,62 +8,44 @@ import type {
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query";
 import { getConfig } from "@snackro/config/env";
-
-// Custom base query with automatic refresh on 401
-const baseQueryWithCredentials = fetchBaseQuery({
-  baseUrl: "",
-  credentials: "include",
-  prepareHeaders: (headers) => {
-    headers.set("Accept", "application/json");
-    return headers;
-  },
-});
+import { getAccessToken } from "./axios";
 
 /**
- * Base query wrapper that:
- * 1. Lazily sets the baseUrl from env config
- * 2. Automatically attempts token refresh on 401
- * 3. Retries the original request after successful refresh
- * 4. Forces logout if refresh fails
+ * Base query wrapper with:
+ * 1. Lazy baseUrl injection from env config
+ * 2. Automatic Authorization header injection
+ * 3. Automatic API response unwrapping
+ * 4. Forces logout on 401
  */
-const baseQueryWithReauth: BaseQueryFn<
+const baseQueryWithAuth: BaseQueryFn<
   string | FetchArgs,
   unknown,
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
-  // Lazily inject the base URL
   const config = getConfig();
-  const adjustedArgs =
-    typeof args === "string"
-      ? args
-      : { ...args, url: args.url.startsWith("http") ? args.url : args.url };
+  const token = getAccessToken();
 
   const baseQuery = fetchBaseQuery({
     baseUrl: config.API_URL,
-    credentials: "include",
     prepareHeaders: (headers) => {
       headers.set("Accept", "application/json");
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
       return headers;
     },
   });
 
-  let result = await baseQuery(adjustedArgs, api, extraOptions);
+  let result = await baseQuery(args, api, extraOptions);
 
+  // Unwrap API response if wrapped with { success, data }
+  if (result.data && typeof result.data === 'object' && 'success' in result.data && 'data' in result.data) {
+    result.data = (result.data as any).data;
+  }
+
+  // Handle 401 - force logout
   if (result.error && result.error.status === 401) {
-    // Attempt token refresh
-    const refreshResult = await baseQueryWithCredentials(
-      { url: `${config.API_URL}/auth/refresh`, method: "POST" },
-      api,
-      extraOptions,
-    );
-
-    if (refreshResult.data) {
-      // Retry original request
-      result = await baseQuery(adjustedArgs, api, extraOptions);
-    } else {
-      // Refresh failed — dispatch logout
-      api.dispatch({ type: "auth/forceLogout" });
-    }
+    api.dispatch({ type: "auth/forceLogout" });
   }
 
   return result;
@@ -75,7 +57,7 @@ const baseQueryWithReauth: BaseQueryFn<
  */
 export const baseApi = createApi({
   reducerPath: "api",
-  baseQuery: baseQueryWithReauth,
-  tagTypes: ["Auth", "User"],
+  baseQuery: baseQueryWithAuth,
+  tagTypes: ["Auth", "User", "Dashboard", "FoodLog"],
   endpoints: () => ({}),
 });

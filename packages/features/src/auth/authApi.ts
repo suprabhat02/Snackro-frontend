@@ -2,27 +2,41 @@
  * Auth API — RTK Query endpoints for authentication
  */
 import { baseApi } from "@snackro/api/baseApi";
-import type { LoginResponse, AuthMeResponse } from "@snackro/auth-core";
+import type { FetchTokenResponse, User, UpdateProfileRequest } from "@snackro/auth-core";
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    loginWithGoogle: builder.mutation<LoginResponse, { idToken: string }>({
+    fetchToken: builder.mutation<FetchTokenResponse, { id_token: string }>({
       query: (body) => ({
-        url: "/auth/google",
+        url: "/api/v1/auth/fetch/token",
         method: "POST",
         body,
       }),
       invalidatesTags: ["Auth"],
     }),
 
-    getMe: builder.query<AuthMeResponse, void>({
-      query: () => "/auth/me",
+    checkUser: builder.query<{ authenticated: boolean; user?: User }, void>({
+      query: () => "/api/v1/auth/check-user",
       providesTags: ["Auth"],
+    }),
+
+    getUserProfile: builder.query<User, void>({
+      query: () => "/api/v1/users/me",
+      providesTags: ["User"],
+    }),
+
+    updateUserProfile: builder.mutation<User, UpdateProfileRequest>({
+      query: (body) => ({
+        url: "/api/v1/users/me",
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["User"],
     }),
 
     logout: builder.mutation<void, void>({
       query: () => ({
-        url: "/auth/logout",
+        url: "/api/v1/auth/logout",
         method: "POST",
       }),
       invalidatesTags: ["Auth", "User"],
@@ -30,5 +44,10 @@ export const authApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useLoginWithGoogleMutation, useGetMeQuery, useLogoutMutation } =
-  authApi;
+export const {
+  useFetchTokenMutation,
+  useCheckUserQuery,
+  useGetUserProfileQuery,
+  useUpdateUserProfileMutation,
+  useLogoutMutation,
+} = authApi;

@@ -19,12 +19,20 @@ export function useAuth() {
     useAppSelector((state) => state.auth);
 
   /**
-   * Initialize auth — restore session from cookies
+   * Initialize auth — restore session if token exists
    * Called once on app mount
    */
   const initialize = useCallback(() => {
     if (!isInitialized) {
-      dispatch(restoreSession());
+      // Only try to restore if we have a token
+      const { hasAccessToken } = require("@snackro/auth-core/tokenManager");
+      if (hasAccessToken()) {
+        dispatch(restoreSession());
+      } else {
+        // Mark as initialized without a session
+        // The slice will handle this gracefully
+        dispatch(restoreSession());
+      }
     }
   }, [dispatch, isInitialized]);
 
@@ -39,7 +47,7 @@ export function useAuth() {
   );
 
   /**
-   * Logout — clears session, cookies, and Redux state
+   * Logout — clears session, token, and Redux state
    */
   const logout = useCallback(() => {
     return dispatch(logoutUser());
