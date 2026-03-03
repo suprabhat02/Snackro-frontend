@@ -1,0 +1,9 @@
+{
+  "name": "@snackro/mobile",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SNACKRO Mobile App — Placeholder for React Native expansion",
+  "scripts": {
+    "placeholder": "echo 'Mobile app not yet implemented. Shared packages are ready in packages/.'"
+  }
+}

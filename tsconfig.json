@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "composite": true,
+    "paths": {
+      "@snackro/types/*": ["./packages/types/src/*"],
+      "@snackro/config/*": ["./packages/config/src/*"],
+      "@snackro/utils/*": ["./packages/utils/src/*"],
+      "@snackro/api/*": ["./packages/api/src/*"],
+      "@snackro/auth-core/*": ["./packages/auth-core/src/*"],
+      "@snackro/store/*": ["./packages/store/src/*"],
+      "@snackro/features/*": ["./packages/features/src/*"],
+      "@snackro/ui/*": ["./packages/ui/src/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist", "coverage"]
+}

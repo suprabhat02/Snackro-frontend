@@ -1,0 +1,151 @@
+/**
+ * SNACKRO Global Styles — CSS Custom Properties
+ *
+ * All design tokens exposed as CSS variables for use in any component.
+ * This file should be imported once at the app root level.
+ */
+
+/* ─── CSS Reset ───────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* ─── Design Tokens (CSS Custom Properties) ───────────── */
+:root {
+  /* Orange Scale */
+  --color-orange-50: #fff2e5;
+  --color-orange-100: #ffe0c2;
+  --color-orange-200: #ffc994;
+  --color-orange-300: #ffad5c;
+  --color-orange-400: #f8943a;
+  --color-orange-500: #f07e1c;
+  --color-orange-600: #d36510;
+  --color-orange-700: #b24e0b;
+  --color-orange-800: #8f3c07;
+  --color-orange-900: #6b2b03;
+
+  /* Green Scale */
+  --color-green-50: #ecffe9;
+  --color-green-100: #c9ffc2;
+  --color-green-200: #9dff93;
+  --color-green-300: #6fff62;
+  --color-green-400: #4dff3a;
+  --color-green-500: #39ff14;
+  --color-green-600: #19d600;
+  --color-green-700: #12a300;
+  --color-green-800: #0b7300;
+  --color-green-900: #064800;
+
+  /* Neutral Backgrounds */
+  --color-bg-primary: #f7f3ef;
+  --color-bg-secondary: #fff8f0;
+  --color-bg-tertiary: #efe7df;
+
+  /* Neutral Text */
+  --color-text-primary: #2b2420;
+  --color-text-secondary: #5c4f46;
+  --color-text-muted: #7c6f65;
+
+  /* Borders */
+  --color-border-strong: #d8c4b2;
+  --color-border-soft: #eadfd4;
+
+  /* Semantic Colors */
+  --color-primary: var(--color-orange-500);
+  --color-primary-hover: var(--color-orange-600);
+  --color-primary-active: var(--color-orange-700);
+  --color-accent: var(--color-green-500);
+  --color-danger: #e53e3e;
+  --color-danger-hover: #c53030;
+  --color-success: var(--color-green-600);
+  --color-warning: var(--color-orange-400);
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+
+  /* Shadows */
+  --shadow-soft: 0 2px 8px rgba(43, 36, 32, 0.08);
+
+  /* Typography */
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+}
+
+/* ─── Utility Animation ───────────────────────────────── */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
