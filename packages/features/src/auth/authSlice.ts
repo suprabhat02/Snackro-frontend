@@ -32,19 +32,9 @@ export const googleLogin = createAsyncThunk<
     const response = await loginWithGoogle(idToken);
     setAccessToken(response.access_token);
 
-    // Transform user data from API format to app format
-    const user: User = {
-      id: response.user.id || "",
-      email: response.user.email || "",
-      full_name: response.user.full_name || response.user.name || "",
-      avatar_url: response.user.avatar_url || response.user.picture || null,
-      daily_protein_target: response.user.daily_protein_target || 100,
-      preferences: response.user.preferences || {},
-      created_at: response.user.created_at || new Date().toISOString(),
-      updated_at: response.user.updated_at || new Date().toISOString(),
-    };
-
-    return user;
+    // API returns user object matching UserResponse from OpenAPI spec
+    // The user object should already have the correct structure
+    return response.user as User;
   } catch (error) {
     clearAccessToken();
     const message = error instanceof Error ? error.message : "Login failed";

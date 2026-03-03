@@ -6,6 +6,7 @@
  */
 import { useCallback, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@snackro/store";
+import { hasAccessToken } from "@snackro/auth-core/tokenManager";
 import {
   googleLogin,
   logoutUser,
@@ -25,7 +26,6 @@ export function useAuth() {
   const initialize = useCallback(() => {
     if (!isInitialized) {
       // Only try to restore if we have a token
-      const { hasAccessToken } = require("@snackro/auth-core/tokenManager");
       if (hasAccessToken()) {
         dispatch(restoreSession());
       } else {

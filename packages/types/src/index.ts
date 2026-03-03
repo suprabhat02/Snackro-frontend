@@ -37,10 +37,12 @@ export interface FetchTokenRequest {
   id_token: string;
 }
 
+// Response from /api/v1/auth/fetch/token
+// The 'user' object should match UserResponse from the API
 export interface FetchTokenResponse {
   access_token: string;
   token_type: string;
-  user: Record<string, any>;
+  user: User; // Matches UserResponse from OpenAPI spec
 }
 
 export interface LoginRequest {

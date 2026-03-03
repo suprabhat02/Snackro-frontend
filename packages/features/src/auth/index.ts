@@ -9,8 +9,10 @@ export {
 } from "./authSlice";
 export {
   authApi,
-  useLoginWithGoogleMutation,
-  useGetMeQuery,
+  useFetchTokenMutation,
+  useCheckUserQuery,
+  useGetUserProfileQuery,
+  useUpdateUserProfileMutation,
   useLogoutMutation,
 } from "./authApi";
 export { useAuth } from "./useAuth";
