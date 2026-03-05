@@ -32,5 +32,5 @@
       "@snackro/ui/*": ["./packages/ui/src/*"]
     }
   },
-  "exclude": ["node_modules", "dist", "coverage"]
+  "exclude": ["node_modules", "dist", "coverage", "apps/web/public"]
 }

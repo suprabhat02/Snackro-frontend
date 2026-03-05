@@ -1,11 +1,16 @@
 /**
  * Dashboard Page — Main authenticated view
  *
- * Displays: profile details, daily protein target (hero), body metrics + BMI,
- * lifestyle goal, coming-soon health parameters.
- * All emoji/arrow characters replaced with react-feather outlined icons.
+ * Animations (framer-motion):
+ *   • Header slides in from top on mount
+ *   • Welcome text fades in from left
+ *   • Protein hero scales + fades in, protein number counts up
+ *   • Body metric cards stagger up
+ *   • Profile + lifestyle cards slide in from sides
+ *   • Coming-soon cards stagger in with extra delay
+ *   • All animations gated by useReducedMotion() for accessibility
  */
-import { useMemo } from "react";
+import { useMemo, useEffect, useRef } from "react";
 import type { ComponentType, SVGProps } from "react";
 import {
   Activity,
@@ -25,12 +30,19 @@ import {
   User,
   Zap,
 } from "react-feather";
+import {
+  motion,
+  useReducedMotion,
+  useMotionValue,
+  useTransform,
+  animate,
+} from "framer-motion";
 import { useAuth } from "@snackro/features";
 import { Button, Card, Stack, Typography, Container } from "@snackro/ui";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { SnackroLogo } from "../components/SnackroLogo";
 
-// ─── Icon type shorthand ──────────────────────────────────────
+// ─── Type shorthand ────────────────────────────────────────────
 
 type FeatherIcon = ComponentType<
   SVGProps<SVGSVGElement> & {
@@ -94,7 +106,7 @@ const LIFESTYLE_META: Record<string, LifestyleMeta> = {
   },
 };
 
-// ─── Coming-soon card data ────────────────────────────────────
+// ─── Coming-soon data ─────────────────────────────────────────
 
 interface ComingSoonItem {
   Icon: FeatherIcon;
@@ -135,7 +147,138 @@ const COMING_SOON_ITEMS: ComingSoonItem[] = [
   },
 ];
 
+// ─── Animation variants ───────────────────────────────────────
+
+const headerAnim = {
+  hidden: { y: -28, opacity: 0 },
+  show: {
+    y: 0,
+    opacity: 1,
+    transition: { type: "spring" as const, stiffness: 340, damping: 28 },
+  },
+};
+
+const fadeLeft = {
+  hidden: { x: -22, opacity: 0 },
+  show: {
+    x: 0,
+    opacity: 1,
+    transition: { type: "spring" as const, stiffness: 300, damping: 26 },
+  },
+};
+
+const heroAnim = {
+  hidden: { scale: 0.96, opacity: 0 },
+  show: {
+    scale: 1,
+    opacity: 1,
+    transition: {
+      type: "spring" as const,
+      stiffness: 280,
+      damping: 24,
+      delay: 0.12,
+    },
+  },
+};
+
+const sectionTitle = {
+  hidden: { x: -16, opacity: 0 },
+  show: {
+    x: 0,
+    opacity: 1,
+    transition: { type: "spring" as const, stiffness: 280, damping: 24 },
+  },
+};
+
+const staggerWrap = (delay = 0.2) => ({
+  hidden: {},
+  show: { transition: { staggerChildren: 0.09, delayChildren: delay } },
+});
+
+const cardUp = {
+  hidden: { y: 20, opacity: 0 },
+  show: {
+    y: 0,
+    opacity: 1,
+    transition: { type: "spring" as const, stiffness: 280, damping: 24 },
+  },
+};
+
+const slideRight = {
+  hidden: { x: -24, opacity: 0 },
+  show: {
+    x: 0,
+    opacity: 1,
+    transition: {
+      type: "spring" as const,
+      stiffness: 260,
+      damping: 22,
+      delay: 0.1,
+    },
+  },
+};
+
+const slideLeft = {
+  hidden: { x: 24, opacity: 0 },
+  show: {
+    x: 0,
+    opacity: 1,
+    transition: {
+      type: "spring" as const,
+      stiffness: 260,
+      damping: 22,
+      delay: 0.15,
+    },
+  },
+};
+
+const comingSoonItem = {
+  hidden: { y: 14, opacity: 0 },
+  show: {
+    y: 0,
+    opacity: 1,
+    transition: { type: "spring" as const, stiffness: 260, damping: 22 },
+  },
+};
+
 // ─── Sub-components ───────────────────────────────────────────
+
+/** Animated count-up for the protein number */
+function ProteinNumber({ target }: { target: number | null | undefined }) {
+  const shouldReduce = useReducedMotion();
+  const count = useMotionValue(0);
+  const displayed = useTransform(count, (v) => Math.round(v).toString());
+  const hasAnimated = useRef(false);
+
+  useEffect(() => {
+    if (target == null || hasAnimated.current) return;
+    hasAnimated.current = true;
+    if (shouldReduce) {
+      count.set(target);
+      return;
+    }
+    const controls = animate(count, target, {
+      duration: 1.1,
+      ease: "easeOut",
+      delay: 0.25,
+    });
+    return () => controls.stop();
+  }, [target, shouldReduce, count]);
+
+  return (
+    <motion.span
+      style={{
+        fontSize: "clamp(52px, 10vw, 80px)",
+        fontWeight: 800,
+        color: "#fff",
+        lineHeight: 1,
+        fontFamily: "var(--font-sans)",
+      }}
+    >
+      {target == null ? "—" : displayed}
+    </motion.span>
+  );
+}
 
 function StatCard({
   label,
@@ -149,73 +292,85 @@ function StatCard({
   accent?: string;
 }) {
   return (
-    <Card padding="var(--space-5)" style={{ flex: "1 1 150px", minWidth: 150 }}>
-      <Stack gap="var(--space-2)">
-        <Typography variant="caption" color="var(--color-text-secondary)">
-          {label}
-        </Typography>
-        <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-          <Typography
-            variant="h3"
-            style={{
-              lineHeight: 1,
-              color: accent ?? "var(--color-text-primary)",
-            }}
-          >
-            {value ?? "—"}
+    <motion.div variants={cardUp} style={{ flex: "1 1 150px", minWidth: 150 }}>
+      <Card padding="var(--space-5)">
+        <Stack gap="var(--space-2)">
+          <Typography variant="caption" color="var(--color-text-secondary)">
+            {label}
           </Typography>
-          {unit != null && value != null && (
-            <Typography variant="caption" color="var(--color-text-secondary)">
-              {unit}
+          <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+            <Typography
+              variant="h3"
+              style={{
+                lineHeight: 1,
+                color: accent ?? "var(--color-text-primary)",
+              }}
+            >
+              {value ?? "—"}
             </Typography>
-          )}
-        </div>
-      </Stack>
-    </Card>
+            {unit != null && value != null && (
+              <Typography variant="caption" color="var(--color-text-secondary)">
+                {unit}
+              </Typography>
+            )}
+          </div>
+        </Stack>
+      </Card>
+    </motion.div>
   );
 }
 
 function ComingSoonCard({ Icon, title, description }: ComingSoonItem) {
+  const shouldReduce = useReducedMotion();
   return (
-    <Card
-      padding="var(--space-4)"
-      style={{
-        flex: "1 1 175px",
-        minWidth: 165,
-        opacity: 0.72,
-        position: "relative",
-        overflow: "hidden",
-      }}
+    <motion.div
+      variants={comingSoonItem}
+      whileHover={
+        shouldReduce
+          ? {}
+          : { y: -3, scale: 1.02, transition: { duration: 0.14 } }
+      }
+      style={{ flex: "1 1 175px", minWidth: 165 }}
     >
-      <div
+      <Card
+        padding="var(--space-4)"
         style={{
-          position: "absolute",
-          top: 10,
-          right: 10,
-          fontSize: 9,
-          fontWeight: 700,
-          letterSpacing: "0.07em",
-          padding: "2px 7px",
-          borderRadius: 9999,
-          backgroundColor: "#ffedd5",
-          color: "#ea580c",
-          fontFamily: "var(--font-sans)",
+          height: "100%",
+          opacity: 0.72,
+          position: "relative",
+          overflow: "hidden",
         }}
       >
-        SOON
-      </div>
-      <Stack gap="var(--space-3)">
-        <Icon size={20} strokeWidth={1.75} color="var(--color-text-muted)" />
-        <Stack gap="var(--space-1)">
-          <Typography variant="label" color="var(--color-text-primary)">
-            {title}
-          </Typography>
-          <Typography variant="caption" color="var(--color-text-secondary)">
-            {description}
-          </Typography>
+        <div
+          style={{
+            position: "absolute",
+            top: 10,
+            right: 10,
+            fontSize: 9,
+            fontWeight: 700,
+            letterSpacing: "0.07em",
+            padding: "2px 7px",
+            borderRadius: 9999,
+            backgroundColor: "#ffedd5",
+            color: "#ea580c",
+            fontFamily: "var(--font-sans)",
+          }}
+        >
+          SOON
+        </div>
+        <Stack gap="var(--space-3)">
+          <Icon size={20} strokeWidth={1.75} color="var(--color-text-muted)" />
+          <Stack gap="var(--space-1)">
+            <Typography variant="label" color="var(--color-text-primary)">
+              {title}
+            </Typography>
+            <Typography variant="caption" color="var(--color-text-secondary)">
+              {description}
+            </Typography>
+          </Stack>
         </Stack>
-      </Stack>
-    </Card>
+      </Card>
+    </motion.div>
   );
 }
 
@@ -224,7 +379,6 @@ interface ProfileRowProps {
   label: string;
   value: string | null | undefined;
 }
-
 function ProfileRow({ Icon, label, value }: ProfileRowProps) {
   return (
     <div
@@ -264,11 +418,11 @@ function ProfileRow({ Icon, label, value }: ProfileRowProps) {
 
 export function DashboardPage() {
   const { user, logout, isLoading } = useAuth();
+  const shouldReduce = useReducedMotion();
 
   const bmi = useMemo(() => {
-    if (user?.weight_kg != null && user.height_cm != null) {
+    if (user?.weight_kg != null && user.height_cm != null)
       return calcBMI(user.weight_kg, user.height_cm);
-    }
     return null;
   }, [user?.weight_kg, user?.height_cm]);
 
@@ -284,15 +438,18 @@ export function DashboardPage() {
 
   const firstName = user?.full_name?.split(" ")[0] ?? "there";
 
+  const gate = shouldReduce
+    ? { initial: false, animate: "show" }
+    : { initial: "hidden", animate: "show" };
+
   return (
     <div
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "var(--color-bg-primary)",
-      }}
+      style={{ minHeight: "100vh", backgroundColor: "var(--color-bg-primary)" }}
     >
       {/* ── Header ── */}
-      <header
+      <motion.header
+        {...gate}
+        variants={shouldReduce ? {} : headerAnim}
         style={{
           backgroundColor: "var(--color-bg-secondary)",
           borderBottom: "1px solid var(--color-border-strong)",
@@ -304,13 +461,10 @@ export function DashboardPage() {
       >
         <Container>
           <Stack direction="row" align="center" justify="space-between">
-            {/* Logo + wordmark */}
             <Stack direction="row" align="center" gap="var(--space-2)">
               <SnackroLogo size={32} />
               <Typography variant="h4">SNACKRO</Typography>
             </Stack>
-
-            {/* Right side: theme toggle + user + sign out */}
             <Stack direction="row" align="center" gap="var(--space-3)">
               <ThemeToggle />
               {user?.avatar_url && (
@@ -342,85 +496,83 @@ export function DashboardPage() {
             </Stack>
           </Stack>
         </Container>
-      </header>
+      </motion.header>
 
       {/* ── Main ── */}
       <main style={{ padding: "var(--space-6) var(--space-4)" }}>
         <Container maxWidth="960px">
           <Stack gap="var(--space-8)">
             {/* ── Welcome ── */}
-            <Stack gap="var(--space-1)">
-              <Typography variant="h2">Welcome back, {firstName}!</Typography>
-              <Typography variant="body" color="var(--color-text-secondary)">
-                Here&apos;s your personal nutrition overview.
-              </Typography>
-            </Stack>
-
-            {/* ── Protein target hero ── */}
-            <div
-              style={{
-                padding: "var(--space-6) var(--space-7)",
-                borderRadius: "var(--radius-md)",
-                background:
-                  "linear-gradient(135deg, var(--color-orange-500), #d4460e)",
-                border: "1px solid rgba(0,0,0,0.08)",
-              }}
-            >
-              <Stack gap="var(--space-2)">
-                <Typography
-                  variant="caption"
-                  style={{
-                    color: "rgba(255,255,255,0.82)",
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  Daily Protein Target
+            <motion.div {...gate} variants={shouldReduce ? {} : fadeLeft}>
+              <Stack gap="var(--space-1)">
+                <Typography variant="h2">Welcome back, {firstName}!</Typography>
+                <Typography variant="body" color="var(--color-text-secondary)">
+                  Here&apos;s your personal nutrition overview.
                 </Typography>
+              </Stack>
+            </motion.div>
 
-                <div
-                  style={{ display: "flex", alignItems: "baseline", gap: 8 }}
-                >
-                  <span
-                    style={{
-                      fontSize: "clamp(52px, 10vw, 80px)",
-                      fontWeight: 800,
-                      color: "#fff",
-                      lineHeight: 1,
-                      fontFamily: "var(--font-sans)",
-                    }}
-                  >
-                    {user?.daily_protein_target ?? "—"}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: 20,
-                      fontWeight: 500,
-                      color: "rgba(255,255,255,0.85)",
-                    }}
-                  >
-                    g / day
-                  </span>
-                </div>
-
-                {(lifestyle != null || user?.weight_kg != null) && (
+            {/* ── Protein hero ── */}
+            <motion.div {...gate} variants={shouldReduce ? {} : heroAnim}>
+              <div
+                style={{
+                  padding: "var(--space-6) var(--space-7)",
+                  borderRadius: "var(--radius-md)",
+                  background:
+                    "linear-gradient(135deg, var(--color-orange-500), #d4460e)",
+                  border: "1px solid rgba(0,0,0,0.08)",
+                }}
+              >
+                <Stack gap="var(--space-2)">
                   <Typography
                     variant="caption"
-                    style={{ color: "rgba(255,255,255,0.72)" }}
+                    style={{
+                      color: "rgba(255,255,255,0.82)",
+                      letterSpacing: "0.08em",
+                      textTransform: "uppercase",
+                    }}
                   >
-                    {lifestyle != null ? lifestyle.label : ""}
-                    {user?.weight_kg != null
-                      ? ` · ${user.weight_kg} kg bodyweight`
-                      : ""}
+                    Daily Protein Target
                   </Typography>
-                )}
-              </Stack>
-            </div>
+                  <div
+                    style={{ display: "flex", alignItems: "baseline", gap: 8 }}
+                  >
+                    <ProteinNumber target={user?.daily_protein_target} />
+                    <span
+                      style={{
+                        fontSize: 20,
+                        fontWeight: 500,
+                        color: "rgba(255,255,255,0.85)",
+                      }}
+                    >
+                      g / day
+                    </span>
+                  </div>
+                  {(lifestyle != null || user?.weight_kg != null) && (
+                    <Typography
+                      variant="caption"
+                      style={{ color: "rgba(255,255,255,0.72)" }}
+                    >
+                      {lifestyle != null ? lifestyle.label : ""}
+                      {user?.weight_kg != null
+                        ? ` · ${user.weight_kg} kg bodyweight`
+                        : ""}
+                    </Typography>
+                  )}
+                </Stack>
+              </div>
+            </motion.div>
 
             {/* ── Body metrics ── */}
             <Stack gap="var(--space-4)">
-              <Typography variant="h4">Body Metrics</Typography>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
+              <motion.div {...gate} variants={shouldReduce ? {} : sectionTitle}>
+                <Typography variant="h4">Body Metrics</Typography>
+              </motion.div>
+              <motion.div
+                {...gate}
+                variants={shouldReduce ? {} : staggerWrap(0.2)}
+                style={{ display: "flex", flexWrap: "wrap", gap: 16 }}
+              >
                 <StatCard label="Weight" value={user?.weight_kg} unit="kg" />
                 <StatCard label="Height" value={user?.height_cm} unit="cm" />
                 <StatCard
@@ -429,89 +581,112 @@ export function DashboardPage() {
                   unit={bmiFeedback?.label}
                   accent={bmiFeedback?.color}
                 />
-              </div>
+              </motion.div>
             </Stack>
 
             {/* ── Profile + Lifestyle ── */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
-              {/* Profile card */}
-              <Card padding="var(--space-5)" style={{ flex: "2 1 280px" }}>
-                <Stack gap="var(--space-4)">
-                  <Typography variant="h4">Profile</Typography>
-                  <Stack gap="var(--space-3)">
-                    <ProfileRow
-                      Icon={User}
-                      label="Full name"
-                      value={user?.full_name}
-                    />
-                    <ProfileRow
-                      Icon={Mail}
-                      label="Email address"
-                      value={user?.email}
-                    />
-                    <ProfileRow
-                      Icon={Calendar}
-                      label="Member since"
-                      value={memberSince}
-                    />
-                  </Stack>
-                </Stack>
-              </Card>
-
-              {/* Lifestyle card */}
-              {lifestyle != null && (
-                <Card padding="var(--space-5)" style={{ flex: "1 1 200px" }}>
+              <motion.div
+                {...gate}
+                variants={shouldReduce ? {} : slideRight}
+                style={{ flex: "2 1 280px" }}
+              >
+                <Card padding="var(--space-5)" style={{ height: "100%" }}>
                   <Stack gap="var(--space-4)">
-                    <Typography variant="h4">Lifestyle Goal</Typography>
+                    <Typography variant="h4">Profile</Typography>
                     <Stack gap="var(--space-3)">
-                      <lifestyle.Icon
-                        size={28}
-                        strokeWidth={1.75}
-                        color="var(--color-orange-500)"
+                      <ProfileRow
+                        Icon={User}
+                        label="Full name"
+                        value={user?.full_name}
                       />
-                      <Stack gap="var(--space-1)">
-                        <Typography
-                          variant="h4"
-                          style={{ color: "var(--color-orange-600, #ea580c)" }}
-                        >
-                          {lifestyle.label}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          color="var(--color-text-secondary)"
-                        >
-                          {lifestyle.description}
-                        </Typography>
-                      </Stack>
+                      <ProfileRow
+                        Icon={Mail}
+                        label="Email address"
+                        value={user?.email}
+                      />
+                      <ProfileRow
+                        Icon={Calendar}
+                        label="Member since"
+                        value={memberSince}
+                      />
                     </Stack>
                   </Stack>
                 </Card>
+              </motion.div>
+
+              {lifestyle != null && (
+                <motion.div
+                  {...gate}
+                  variants={shouldReduce ? {} : slideLeft}
+                  style={{ flex: "1 1 200px" }}
+                >
+                  <Card padding="var(--space-5)" style={{ height: "100%" }}>
+                    <Stack gap="var(--space-4)">
+                      <Typography variant="h4">Lifestyle Goal</Typography>
+                      <Stack gap="var(--space-3)">
+                        <lifestyle.Icon
+                          size={28}
+                          strokeWidth={1.75}
+                          color="var(--color-orange-500)"
+                        />
+                        <Stack gap="var(--space-1)">
+                          <Typography
+                            variant="h4"
+                            style={{
+                              color: "var(--color-orange-600, #ea580c)",
+                            }}
+                          >
+                            {lifestyle.label}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            color="var(--color-text-secondary)"
+                          >
+                            {lifestyle.description}
+                          </Typography>
+                        </Stack>
+                      </Stack>
+                    </Stack>
+                  </Card>
+                </motion.div>
               )}
             </div>
 
-            {/* ── Health Parameters (coming soon) ── */}
+            {/* ── Coming soon ── */}
             <Stack gap="var(--space-4)">
-              <Stack direction="row" align="center" gap="var(--space-3)">
-                <Typography variant="h4">Health Parameters</Typography>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    letterSpacing: "0.05em",
-                    padding: "2px 10px",
-                    borderRadius: 9999,
-                    backgroundColor: "#ffedd5",
-                    color: "#ea580c",
-                    fontFamily: "var(--font-sans)",
-                  }}
+              <motion.div {...gate} variants={shouldReduce ? {} : sectionTitle}>
+                <Stack direction="row" align="center" gap="var(--space-3)">
+                  <Typography variant="h4">Health Parameters</Typography>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 700,
+                      letterSpacing: "0.05em",
+                      padding: "2px 10px",
+                      borderRadius: 9999,
+                      backgroundColor: "#ffedd5",
+                      color: "#ea580c",
+                      fontFamily: "var(--font-sans)",
+                    }}
+                  >
+                    COMING SOON
+                  </span>
+                </Stack>
+              </motion.div>
+              <motion.div {...gate} variants={shouldReduce ? {} : sectionTitle}>
+                <Typography
+                  variant="caption"
+                  color="var(--color-text-secondary)"
                 >
-                  COMING SOON
-                </span>
-              </Stack>
-              <Typography variant="caption" color="var(--color-text-secondary)">
-                Advanced health metrics will be available in a future update.
-              </Typography>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+                  Advanced health metrics will be available in a future update.
+                </Typography>
+              </motion.div>
+              <motion.div
+                {...gate}
+                variants={shouldReduce ? {} : staggerWrap(0.4)}
+                style={{ display: "flex", flexWrap: "wrap", gap: 12 }}
+              >
                 {COMING_SOON_ITEMS.map(({ Icon, title, description }) => (
                   <ComingSoonCard
                     key={title}
@@ -520,7 +695,7 @@ export function DashboardPage() {
                     description={description}
                   />
                 ))}
-              </div>
+              </motion.div>
             </Stack>
           </Stack>
         </Container>
