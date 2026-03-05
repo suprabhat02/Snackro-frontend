@@ -23,3 +23,19 @@ export function hasValidEmail(user: User): boolean {
 export function isSessionExpired(expiresAt: number): boolean {
   return Date.now() >= expiresAt;
 }
+
+/**
+ * Check if a user has completed their profile onboarding.
+ * Profile is complete when weight, height and lifestyle are all set.
+ * Used by ProfileCompletionGuard to enforce the onboarding wall.
+ */
+export function isProfileComplete(user: User): boolean {
+  return (
+    user.weight_kg !== null &&
+    user.weight_kg !== undefined &&
+    user.height_cm !== null &&
+    user.height_cm !== undefined &&
+    user.lifestyle !== null &&
+    user.lifestyle !== undefined
+  );
+}

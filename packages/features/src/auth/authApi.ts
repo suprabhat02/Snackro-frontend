@@ -1,11 +1,12 @@
 /**
- * Auth API — RTK Query endpoints for authentication
+ * Auth API — RTK Query endpoints for authentication and user management
  */
 import { baseApi } from "@snackro/api/baseApi";
 import type {
   FetchTokenResponse,
   User,
   UpdateProfileRequest,
+  CreateUserRequest,
 } from "@snackro/auth-core";
 
 export const authApi = baseApi.injectEndpoints({
@@ -24,16 +25,43 @@ export const authApi = baseApi.injectEndpoints({
       providesTags: ["Auth"],
     }),
 
-    getUserProfile: builder.query<User, void>({
-      query: () => "/api/v1/users/me",
+    /**
+     * GET /api/v1/users/me?email=...
+     * Requires email as query param per OpenAPI spec.
+     */
+    getUserProfile: builder.query<User, string>({
+      query: (email) => ({
+        url: "/api/v1/users/me",
+        params: { email },
+      }),
       providesTags: ["User"],
     }),
 
-    updateUserProfile: builder.mutation<User, UpdateProfileRequest>({
+    /**
+     * POST /api/v1/users
+     * First-time profile completion — backend calculates daily_protein_target.
+     */
+    createUser: builder.mutation<User, CreateUserRequest>({
       query: (body) => ({
+        url: "/api/v1/users",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Auth", "User"],
+    }),
+
+    /**
+     * PUT /api/v1/users/me?email=...
+     */
+    updateUserProfile: builder.mutation<
+      User,
+      { email: string; data: UpdateProfileRequest }
+    >({
+      query: ({ email, data }) => ({
         url: "/api/v1/users/me",
         method: "PUT",
-        body,
+        params: { email },
+        body: data,
       }),
       invalidatesTags: ["User"],
     }),
@@ -52,6 +80,8 @@ export const {
   useFetchTokenMutation,
   useCheckUserQuery,
   useGetUserProfileQuery,
+  useLazyGetUserProfileQuery,
+  useCreateUserMutation,
   useUpdateUserProfileMutation,
   useLogoutMutation,
 } = authApi;

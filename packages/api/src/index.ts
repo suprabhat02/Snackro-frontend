@@ -1,5 +1,5 @@
 export {
-  apiClient,
+  default as apiClient,
   apiGet,
   apiPost,
   apiPut,

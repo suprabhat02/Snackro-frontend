@@ -14,7 +14,7 @@ import axios, {
   InternalAxiosRequestConfig,
 } from "axios";
 import { getConfig } from "@snackro/config/env";
-import type { ApiError, ApiResponse } from "@snackro/types";
+import type { ApiError } from "@snackro/types";
 
 // ─── Create Axios Instance ───────────────────────────────────
 const apiClient = axios.create({
@@ -90,8 +90,13 @@ apiClient.interceptors.response.use(
     return response;
   },
   async (error: AxiosError<ApiError>) => {
-    // If 401, clear token and trigger logout
-    if (error.response?.status === 401) {
+    // 401 on the token-exchange endpoint means the Google account has no
+    // user record yet (unregistered) — NOT an expired session.
+    // Only trigger forceLogout for 401s on OTHER authenticated endpoints.
+    const url = error.config?.url ?? "";
+    const isTokenExchange =
+      url.includes("/auth/fetch/token") || url.includes("/auth/google");
+    if (error.response?.status === 401 && !isTokenExchange) {
       clearAccessToken();
       if (onForceLogout) {
         onForceLogout();

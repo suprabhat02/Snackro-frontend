@@ -1,5 +1,9 @@
 /**
  * Card — Pure presentation component
+ *
+ * Uses a strong border for depth (Tailwind UI–style) rather than a heavy
+ * box-shadow. The faint shadow-sm is kept only to give a 1-pixel "lift"
+ * that reads naturally on both light and dark backgrounds.
  */
 import React from "react";
 
@@ -19,8 +23,8 @@ export const Card: React.FC<CardProps> = ({
       style={{
         backgroundColor: "var(--color-bg-secondary)",
         borderRadius: "var(--radius-md)",
-        border: "1px solid var(--color-border-soft)",
-        boxShadow: "var(--shadow-soft)",
+        border: "1px solid var(--color-border-strong)",
+        boxShadow: "var(--shadow-sm)",
         padding,
         ...style,
       }}

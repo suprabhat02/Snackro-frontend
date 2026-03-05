@@ -1,9 +1,6 @@
 {
   "openapi": "3.1.0",
-  "info": {
-    "title": "Protein SaaS API",
-    "version": "0.1.0"
-  },
+  "info": { "title": "Snackro API", "version": "0.1.0" },
   "paths": {
     "/api/v1/health": {
       "get": {
@@ -32,9 +29,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GoogleLoginRequest"
-              }
+              "schema": { "$ref": "#/components/schemas/GoogleLoginRequest" }
             }
           },
           "required": true
@@ -54,9 +49,7 @@
             "description": "Validation Error",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
               }
             }
           }
@@ -93,14 +86,7 @@
             "in": "header",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
               "title": "Authorization"
             }
           }
@@ -120,9 +106,7 @@
             "description": "Validation Error",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
               }
             }
           }
@@ -139,18 +123,12 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponse_dict_"
-                }
+                "schema": { "$ref": "#/components/schemas/ApiResponse_dict_" }
               }
             }
           }
         },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
+        "security": [{ "HTTPBearer": [] }]
       }
     },
     "/api/v1/auth/fetch/token": {
@@ -161,9 +139,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FetchTokenRequest"
-              }
+              "schema": { "$ref": "#/components/schemas/FetchTokenRequest" }
             }
           },
           "required": true
@@ -183,9 +159,42 @@
             "description": "Validation Error",
             "content": {
               "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users": {
+      "post": {
+        "tags": ["users"],
+        "summary": "Create User",
+        "operationId": "create_user_api_v1_users_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateUserRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ApiResponse_UserResponse_"
                 }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
               }
             }
           }
@@ -199,20 +208,10 @@
         "operationId": "profile_api_v1_users_me_get",
         "parameters": [
           {
-            "name": "authorization",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Authorization"
-            }
+            "name": "email",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "title": "Email" }
           }
         ],
         "responses": {
@@ -230,9 +229,7 @@
             "description": "Validation Error",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
               }
             }
           }
@@ -244,29 +241,17 @@
         "operationId": "update_profile_api_v1_users_me_put",
         "parameters": [
           {
-            "name": "authorization",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Authorization"
-            }
+            "name": "email",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "title": "Email" }
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateProfileRequest"
-              }
+              "schema": { "$ref": "#/components/schemas/UpdateProfileRequest" }
             }
           }
         },
@@ -285,9 +270,38 @@
             "description": "Validation Error",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["users"],
+        "summary": "Delete User",
+        "operationId": "delete_user_api_v1_users_me_delete",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "title": "Email" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiResponse_dict_" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
               }
             }
           }
@@ -305,14 +319,7 @@
             "in": "header",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
               "title": "Authorization"
             }
           }
@@ -332,9 +339,7 @@
             "description": "Validation Error",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
               }
             }
           }
@@ -352,14 +357,7 @@
             "in": "header",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
               "title": "Authorization"
             }
           }
@@ -368,9 +366,7 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FoodLogCreateRequest"
-              }
+              "schema": { "$ref": "#/components/schemas/FoodLogCreateRequest" }
             }
           }
         },
@@ -389,9 +385,7 @@
             "description": "Validation Error",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
               }
             }
           }
@@ -430,14 +424,7 @@
             "in": "header",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
               "title": "Authorization"
             }
           }
@@ -457,9 +444,7 @@
             "description": "Validation Error",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
               }
             }
           }
@@ -476,24 +461,14 @@
             "name": "log_id",
             "in": "path",
             "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Log Id"
-            }
+            "schema": { "type": "string", "title": "Log Id" }
           },
           {
             "name": "authorization",
             "in": "header",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
               "title": "Authorization"
             }
           }
@@ -502,9 +477,7 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FoodLogUpdateRequest"
-              }
+              "schema": { "$ref": "#/components/schemas/FoodLogUpdateRequest" }
             }
           }
         },
@@ -523,9 +496,7 @@
             "description": "Validation Error",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
               }
             }
           }
@@ -540,24 +511,14 @@
             "name": "log_id",
             "in": "path",
             "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Log Id"
-            }
+            "schema": { "type": "string", "title": "Log Id" }
           },
           {
             "name": "authorization",
             "in": "header",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
               "title": "Authorization"
             }
           }
@@ -577,9 +538,7 @@
             "description": "Validation Error",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
               }
             }
           }
@@ -591,22 +550,12 @@
     "schemas": {
       "ApiResponse_AuthTokensResponse_": {
         "properties": {
-          "success": {
-            "type": "boolean",
-            "title": "Success",
-            "default": true
-          },
-          "data": {
-            "$ref": "#/components/schemas/AuthTokensResponse"
-          },
+          "success": { "type": "boolean", "title": "Success", "default": true },
+          "data": { "$ref": "#/components/schemas/AuthTokensResponse" },
           "meta": {
             "anyOf": [
-              {
-                "$ref": "#/components/schemas/PaginationMeta"
-              },
-              {
-                "type": "null"
-              }
+              { "$ref": "#/components/schemas/PaginationMeta" },
+              { "type": "null" }
             ]
           }
         },
@@ -616,22 +565,12 @@
       },
       "ApiResponse_DashboardResponse_": {
         "properties": {
-          "success": {
-            "type": "boolean",
-            "title": "Success",
-            "default": true
-          },
-          "data": {
-            "$ref": "#/components/schemas/DashboardResponse"
-          },
+          "success": { "type": "boolean", "title": "Success", "default": true },
+          "data": { "$ref": "#/components/schemas/DashboardResponse" },
           "meta": {
             "anyOf": [
-              {
-                "$ref": "#/components/schemas/PaginationMeta"
-              },
-              {
-                "type": "null"
-              }
+              { "$ref": "#/components/schemas/PaginationMeta" },
+              { "type": "null" }
             ]
           }
         },
@@ -641,22 +580,12 @@
       },
       "ApiResponse_FetchTokenResponse_": {
         "properties": {
-          "success": {
-            "type": "boolean",
-            "title": "Success",
-            "default": true
-          },
-          "data": {
-            "$ref": "#/components/schemas/FetchTokenResponse"
-          },
+          "success": { "type": "boolean", "title": "Success", "default": true },
+          "data": { "$ref": "#/components/schemas/FetchTokenResponse" },
           "meta": {
             "anyOf": [
-              {
-                "$ref": "#/components/schemas/PaginationMeta"
-              },
-              {
-                "type": "null"
-              }
+              { "$ref": "#/components/schemas/PaginationMeta" },
+              { "type": "null" }
             ]
           }
         },
@@ -666,22 +595,12 @@
       },
       "ApiResponse_FoodLogResponse_": {
         "properties": {
-          "success": {
-            "type": "boolean",
-            "title": "Success",
-            "default": true
-          },
-          "data": {
-            "$ref": "#/components/schemas/FoodLogResponse"
-          },
+          "success": { "type": "boolean", "title": "Success", "default": true },
+          "data": { "$ref": "#/components/schemas/FoodLogResponse" },
           "meta": {
             "anyOf": [
-              {
-                "$ref": "#/components/schemas/PaginationMeta"
-              },
-              {
-                "type": "null"
-              }
+              { "$ref": "#/components/schemas/PaginationMeta" },
+              { "type": "null" }
             ]
           }
         },
@@ -691,22 +610,12 @@
       },
       "ApiResponse_RefreshResponse_": {
         "properties": {
-          "success": {
-            "type": "boolean",
-            "title": "Success",
-            "default": true
-          },
-          "data": {
-            "$ref": "#/components/schemas/RefreshResponse"
-          },
+          "success": { "type": "boolean", "title": "Success", "default": true },
+          "data": { "$ref": "#/components/schemas/RefreshResponse" },
           "meta": {
             "anyOf": [
-              {
-                "$ref": "#/components/schemas/PaginationMeta"
-              },
-              {
-                "type": "null"
-              }
+              { "$ref": "#/components/schemas/PaginationMeta" },
+              { "type": "null" }
             ]
           }
         },
@@ -716,22 +625,12 @@
       },
       "ApiResponse_UserResponse_": {
         "properties": {
-          "success": {
-            "type": "boolean",
-            "title": "Success",
-            "default": true
-          },
-          "data": {
-            "$ref": "#/components/schemas/UserResponse"
-          },
+          "success": { "type": "boolean", "title": "Success", "default": true },
+          "data": { "$ref": "#/components/schemas/UserResponse" },
           "meta": {
             "anyOf": [
-              {
-                "$ref": "#/components/schemas/PaginationMeta"
-              },
-              {
-                "type": "null"
-              }
+              { "$ref": "#/components/schemas/PaginationMeta" },
+              { "type": "null" }
             ]
           }
         },
@@ -741,11 +640,7 @@
       },
       "ApiResponse_dict_": {
         "properties": {
-          "success": {
-            "type": "boolean",
-            "title": "Success",
-            "default": true
-          },
+          "success": { "type": "boolean", "title": "Success", "default": true },
           "data": {
             "additionalProperties": true,
             "type": "object",
@@ -753,12 +648,8 @@
           },
           "meta": {
             "anyOf": [
-              {
-                "$ref": "#/components/schemas/PaginationMeta"
-              },
-              {
-                "type": "null"
-              }
+              { "$ref": "#/components/schemas/PaginationMeta" },
+              { "type": "null" }
             ]
           }
         },
@@ -768,26 +659,16 @@
       },
       "ApiResponse_dict_str__str__": {
         "properties": {
-          "success": {
-            "type": "boolean",
-            "title": "Success",
-            "default": true
-          },
+          "success": { "type": "boolean", "title": "Success", "default": true },
           "data": {
-            "additionalProperties": {
-              "type": "string"
-            },
+            "additionalProperties": { "type": "string" },
             "type": "object",
             "title": "Data"
           },
           "meta": {
             "anyOf": [
-              {
-                "$ref": "#/components/schemas/PaginationMeta"
-              },
-              {
-                "type": "null"
-              }
+              { "$ref": "#/components/schemas/PaginationMeta" },
+              { "type": "null" }
             ]
           }
         },
@@ -797,26 +678,16 @@
       },
       "ApiResponse_list_FoodLogResponse__": {
         "properties": {
-          "success": {
-            "type": "boolean",
-            "title": "Success",
-            "default": true
-          },
+          "success": { "type": "boolean", "title": "Success", "default": true },
           "data": {
-            "items": {
-              "$ref": "#/components/schemas/FoodLogResponse"
-            },
+            "items": { "$ref": "#/components/schemas/FoodLogResponse" },
             "type": "array",
             "title": "Data"
           },
           "meta": {
             "anyOf": [
-              {
-                "$ref": "#/components/schemas/PaginationMeta"
-              },
-              {
-                "type": "null"
-              }
+              { "$ref": "#/components/schemas/PaginationMeta" },
+              { "type": "null" }
             ]
           }
         },
@@ -826,17 +697,47 @@
       },
       "AuthTokensResponse": {
         "properties": {
-          "csrf_token": {
-            "type": "string",
-            "title": "Csrf Token"
-          },
-          "user": {
-            "$ref": "#/components/schemas/UserResponse"
-          }
+          "csrf_token": { "type": "string", "title": "Csrf Token" },
+          "user": { "$ref": "#/components/schemas/UserResponse" }
         },
         "type": "object",
         "required": ["csrf_token", "user"],
         "title": "AuthTokensResponse"
+      },
+      "CreateUserRequest": {
+        "properties": {
+          "email": { "type": "string", "format": "email", "title": "Email" },
+          "full_name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 2,
+            "title": "Full Name"
+          },
+          "weight_kg": {
+            "type": "number",
+            "maximum": 300.0,
+            "exclusiveMinimum": 20.0,
+            "title": "Weight Kg",
+            "description": "Weight in kilograms"
+          },
+          "height_cm": {
+            "type": "number",
+            "maximum": 300.0,
+            "exclusiveMinimum": 50.0,
+            "title": "Height Cm",
+            "description": "Height in centimeters"
+          },
+          "lifestyle": { "$ref": "#/components/schemas/LifestyleGoal" }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "full_name",
+          "weight_kg",
+          "height_cm",
+          "lifestyle"
+        ],
+        "title": "CreateUserRequest"
       },
       "DailyProgress": {
         "properties": {
@@ -863,13 +764,9 @@
       },
       "DashboardResponse": {
         "properties": {
-          "progress": {
-            "$ref": "#/components/schemas/DailyProgress"
-          },
+          "progress": { "$ref": "#/components/schemas/DailyProgress" },
           "logs": {
-            "items": {
-              "$ref": "#/components/schemas/FoodLogResponse"
-            },
+            "items": { "$ref": "#/components/schemas/FoodLogResponse" },
             "type": "array",
             "title": "Logs"
           }
@@ -893,10 +790,7 @@
       },
       "FetchTokenResponse": {
         "properties": {
-          "access_token": {
-            "type": "string",
-            "title": "Access Token"
-          },
+          "access_token": { "type": "string", "title": "Access Token" },
           "token_type": {
             "type": "string",
             "title": "Token Type",
@@ -922,14 +816,14 @@
           },
           "protein_grams": {
             "type": "number",
-            "maximum": 500,
-            "exclusiveMinimum": 0,
+            "maximum": 500.0,
+            "exclusiveMinimum": 0.0,
             "title": "Protein Grams"
           },
           "quantity": {
             "type": "number",
-            "maximum": 10000,
-            "exclusiveMinimum": 0,
+            "maximum": 10000.0,
+            "exclusiveMinimum": 0.0,
             "title": "Quantity"
           },
           "unit": {
@@ -945,13 +839,8 @@
           },
           "notes": {
             "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 500
-              },
-              {
-                "type": "null"
-              }
+              { "type": "string", "maxLength": 500 },
+              { "type": "null" }
             ],
             "title": "Notes"
           }
@@ -968,40 +857,18 @@
       },
       "FoodLogResponse": {
         "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
-          "food_name": {
-            "type": "string",
-            "title": "Food Name"
-          },
-          "protein_grams": {
-            "type": "number",
-            "title": "Protein Grams"
-          },
-          "quantity": {
-            "type": "number",
-            "title": "Quantity"
-          },
-          "unit": {
-            "type": "string",
-            "title": "Unit"
-          },
+          "id": { "type": "string", "title": "Id" },
+          "food_name": { "type": "string", "title": "Food Name" },
+          "protein_grams": { "type": "number", "title": "Protein Grams" },
+          "quantity": { "type": "number", "title": "Quantity" },
+          "unit": { "type": "string", "title": "Unit" },
           "log_date": {
             "type": "string",
             "format": "date",
             "title": "Log Date"
           },
           "notes": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
             "title": "Notes"
           },
           "created_at": {
@@ -1038,14 +905,14 @@
           },
           "protein_grams": {
             "type": "number",
-            "maximum": 500,
-            "exclusiveMinimum": 0,
+            "maximum": 500.0,
+            "exclusiveMinimum": 0.0,
             "title": "Protein Grams"
           },
           "quantity": {
             "type": "number",
-            "maximum": 10000,
-            "exclusiveMinimum": 0,
+            "maximum": 10000.0,
+            "exclusiveMinimum": 0.0,
             "title": "Quantity"
           },
           "unit": {
@@ -1061,13 +928,8 @@
           },
           "notes": {
             "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 500
-              },
-              {
-                "type": "null"
-              }
+              { "type": "string", "maxLength": 500 },
+              { "type": "null" }
             ],
             "title": "Notes"
           }
@@ -1084,11 +946,7 @@
       },
       "GoogleLoginRequest": {
         "properties": {
-          "id_token": {
-            "type": "string",
-            "minLength": 20,
-            "title": "Id Token"
-          }
+          "id_token": { "type": "string", "minLength": 20, "title": "Id Token" }
         },
         "type": "object",
         "required": ["id_token"],
@@ -1097,9 +955,7 @@
       "HTTPValidationError": {
         "properties": {
           "detail": {
-            "items": {
-              "$ref": "#/components/schemas/ValidationError"
-            },
+            "items": { "$ref": "#/components/schemas/ValidationError" },
             "type": "array",
             "title": "Detail"
           }
@@ -1107,20 +963,23 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "LifestyleGoal": {
+        "type": "string",
+        "enum": [
+          "sedentary",
+          "lightly_active",
+          "regular_exercise",
+          "recomposition",
+          "muscle_building",
+          "aggressive_bodybuilding"
+        ],
+        "title": "LifestyleGoal"
+      },
       "PaginationMeta": {
         "properties": {
-          "page": {
-            "type": "integer",
-            "title": "Page"
-          },
-          "page_size": {
-            "type": "integer",
-            "title": "Page Size"
-          },
-          "total": {
-            "type": "integer",
-            "title": "Total"
-          }
+          "page": { "type": "integer", "title": "Page" },
+          "page_size": { "type": "integer", "title": "Page Size" },
+          "total": { "type": "integer", "title": "Total" }
         },
         "type": "object",
         "required": ["page", "page_size", "total"],
@@ -1128,10 +987,7 @@
       },
       "RefreshResponse": {
         "properties": {
-          "csrf_token": {
-            "type": "string",
-            "title": "Csrf Token"
-          }
+          "csrf_token": { "type": "string", "title": "Csrf Token" }
         },
         "type": "object",
         "required": ["csrf_token"],
@@ -1147,26 +1003,29 @@
           },
           "daily_protein_target": {
             "type": "integer",
-            "maximum": 450,
-            "minimum": 30,
+            "maximum": 450.0,
+            "minimum": 30.0,
             "title": "Daily Protein Target"
           },
-          "preferences": {
-            "additionalProperties": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "boolean"
-                }
-              ]
-            },
-            "type": "object",
-            "title": "Preferences"
+          "weight_kg": {
+            "anyOf": [
+              { "type": "number", "maximum": 300.0, "exclusiveMinimum": 20.0 },
+              { "type": "null" }
+            ],
+            "title": "Weight Kg"
+          },
+          "height_cm": {
+            "anyOf": [
+              { "type": "number", "maximum": 300.0, "exclusiveMinimum": 50.0 },
+              { "type": "null" }
+            ],
+            "title": "Height Cm"
+          },
+          "lifestyle": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/LifestyleGoal" },
+              { "type": "null" }
+            ]
           }
         },
         "type": "object",
@@ -1175,50 +1034,26 @@
       },
       "UserResponse": {
         "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
-          "email": {
-            "type": "string",
-            "format": "email",
-            "title": "Email"
-          },
-          "full_name": {
-            "type": "string",
-            "title": "Full Name"
-          },
-          "avatar_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Avatar Url"
-          },
+          "id": { "type": "string", "title": "Id" },
+          "email": { "type": "string", "format": "email", "title": "Email" },
+          "full_name": { "type": "string", "title": "Full Name" },
           "daily_protein_target": {
             "type": "integer",
             "title": "Daily Protein Target"
           },
-          "preferences": {
-            "additionalProperties": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "boolean"
-                }
-              ]
-            },
-            "type": "object",
-            "title": "Preferences"
+          "weight_kg": {
+            "anyOf": [{ "type": "number" }, { "type": "null" }],
+            "title": "Weight Kg"
+          },
+          "height_cm": {
+            "anyOf": [{ "type": "number" }, { "type": "null" }],
+            "title": "Height Cm"
+          },
+          "lifestyle": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/LifestyleGoal" },
+              { "type": "null" }
+            ]
           },
           "created_at": {
             "type": "string",
@@ -1237,7 +1072,6 @@
           "email",
           "full_name",
           "daily_protein_target",
-          "preferences",
           "created_at",
           "updated_at"
         ],
@@ -1246,38 +1080,18 @@
       "ValidationError": {
         "properties": {
           "loc": {
-            "items": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "integer"
-                }
-              ]
-            },
+            "items": { "anyOf": [{ "type": "string" }, { "type": "integer" }] },
             "type": "array",
             "title": "Location"
           },
-          "msg": {
-            "type": "string",
-            "title": "Message"
-          },
-          "type": {
-            "type": "string",
-            "title": "Error Type"
-          }
+          "msg": { "type": "string", "title": "Message" },
+          "type": { "type": "string", "title": "Error Type" }
         },
         "type": "object",
         "required": ["loc", "msg", "type"],
         "title": "ValidationError"
       }
     },
-    "securitySchemes": {
-      "HTTPBearer": {
-        "type": "http",
-        "scheme": "bearer"
-      }
-    }
+    "securitySchemes": { "HTTPBearer": { "type": "http", "scheme": "bearer" } }
   }
 }

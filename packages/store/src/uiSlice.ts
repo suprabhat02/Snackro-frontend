@@ -4,7 +4,7 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { AppNotification } from "@snackro/types";
 
-interface UIState {
+export interface UIState {
   sidebarOpen: boolean;
   notifications: AppNotification[];
   globalLoading: boolean;

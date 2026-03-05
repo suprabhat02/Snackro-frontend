@@ -20,10 +20,13 @@ describe("authSlice", () => {
       user: {
         id: "1",
         email: "test@test.com",
-        name: "Test",
-        picture: "",
-        createdAt: "",
-        updatedAt: "",
+        full_name: "Test",
+        daily_protein_target: 100,
+        weight_kg: null,
+        height_cm: null,
+        lifestyle: null,
+        created_at: "",
+        updated_at: "",
       },
       isAuthenticated: true,
     };

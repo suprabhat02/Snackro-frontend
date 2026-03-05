@@ -9,6 +9,7 @@ import {
 import {
   loginWithGoogle,
   logout as logoutService,
+  checkUser,
   getUserProfile,
   setAccessToken,
   clearAccessToken,
@@ -17,11 +18,13 @@ import {
 import type { User } from "@snackro/auth-core";
 import { baseApi } from "@snackro/api/baseApi";
 
-// ─── Async Thunks ────────────────────────────────────────────
+// ─── Async Thunks ─────────────────────────────────────────────
 
 /**
- * Login with Google ID Token
- * Sends token to backend, receives JWT access token + user data
+ * Login with Google ID Token.
+ *
+ * On 401: the Google account has no Snackro record — return a clear error
+ * message so the LoginPage can surface it via window.alert.
  */
 export const googleLogin = createAsyncThunk<
   User,
@@ -31,20 +34,34 @@ export const googleLogin = createAsyncThunk<
   try {
     const response = await loginWithGoogle(idToken);
     setAccessToken(response.access_token);
-
-    // API returns user object matching UserResponse from OpenAPI spec
-    // The user object should already have the correct structure
-    return response.user as User;
-  } catch (error) {
+    // Fetch the complete user record so weight_kg / height_cm / lifestyle
+    // are always populated in Redux (the token-exchange response may only
+    // return a partial user depending on the backend implementation).
+    try {
+      return await getUserProfile(response.user.email);
+    } catch {
+      return response.user as User;
+    }
+  } catch (error: unknown) {
     clearAccessToken();
-    const message = error instanceof Error ? error.message : "Login failed";
-    return rejectWithValue(message);
+    const status =
+      error && typeof error === "object" && "status" in error
+        ? (error as { status: number }).status
+        : 0;
+    if (status === 401) {
+      return rejectWithValue(
+        "You are not an existing user. Please start by creating a new account.",
+      );
+    }
+    return rejectWithValue(
+      error instanceof Error ? error.message : "Login failed",
+    );
   }
 });
 
 /**
- * Restore session on app load
- * Calls /api/v1/users/me to check if token is valid
+ * Restore session on app load.
+ * Calls /api/v1/auth/check-user — identity derived from Bearer token.
  */
 export const restoreSession = createAsyncThunk<
   User,
@@ -52,8 +69,17 @@ export const restoreSession = createAsyncThunk<
   { rejectValue: string }
 >("auth/restoreSession", async (_, { rejectWithValue }) => {
   try {
-    const user = await getUserProfile();
-    return user;
+    const result = await checkUser();
+    if (result.authenticated && result.user) {
+      // Fetch complete profile so all body metrics are present after a
+      // page refresh / session restore, not just the basic user object.
+      try {
+        return await getUserProfile(result.user.email);
+      } catch {
+        return result.user;
+      }
+    }
+    return rejectWithValue("No active session");
   } catch (error) {
     clearAccessToken();
     const message = error instanceof Error ? error.message : "Session expired";
@@ -66,7 +92,7 @@ export const restoreSession = createAsyncThunk<
  */
 export const logoutUser = createAsyncThunk<void, void, { rejectValue: string }>(
   "auth/logoutUser",
-  async (_, { dispatch, rejectWithValue }) => {
+  async (_, { dispatch }) => {
     try {
       await logoutService();
     } catch {
@@ -84,7 +110,7 @@ const authSlice = createSlice({
   name: "auth",
   initialState: initialAuthState,
   reducers: {
-    /** Force logout (used by interceptors) */
+    /** Force logout (used by axios interceptors on 401) */
     forceLogout(state) {
       state.user = null;
       state.isAuthenticated = false;
@@ -146,7 +172,6 @@ const authSlice = createSlice({
         Object.assign(state, initialAuthState, { isInitialized: true });
       })
       .addCase(logoutUser.rejected, (state) => {
-        // Always clear auth state on logout, even if API call fails
         Object.assign(state, initialAuthState, { isInitialized: true });
       });
   },

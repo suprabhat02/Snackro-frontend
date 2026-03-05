@@ -3,14 +3,36 @@
  * Platform-agnostic types for the entire SNACKRO ecosystem
  */
 
+// ─── Domain Enums ─────────────────────────────────────────────
+
+/**
+ * Lifestyle goals — maps to backend LifestyleGoal enum.
+ * Order matters: ascending intensity used for display tables.
+ */
+export type LifestyleGoal =
+  | "sedentary"
+  | "lightly_active"
+  | "regular_exercise"
+  | "recomposition"
+  | "muscle_building"
+  | "aggressive_bodybuilding";
+
 // ─── Auth Types ───────────────────────────────────────────────
+
+/**
+ * User — matches UserResponse from OpenAPI spec.
+ * avatar_url is a client-side extension (from Google OAuth, not persisted).
+ */
 export interface User {
   id: string;
   email: string;
   full_name: string;
-  avatar_url: string | null;
+  /** Not in API spec — enriched client-side from Google credential */
+  avatar_url?: string | null;
   daily_protein_target: number;
-  preferences: Record<string, string | number | boolean>;
+  weight_kg: number | null;
+  height_cm: number | null;
+  lifestyle: LifestyleGoal | null;
   created_at: string;
   updated_at: string;
 }
@@ -66,7 +88,21 @@ export interface AuthMeResponse {
 export interface UpdateProfileRequest {
   full_name: string;
   daily_protein_target: number;
-  preferences?: Record<string, string | number | boolean>;
+  weight_kg?: number | null;
+  height_cm?: number | null;
+  lifestyle?: LifestyleGoal | null;
+}
+
+/**
+ * Request body for POST /api/v1/users
+ * Used when a new user completes their profile for the first time.
+ */
+export interface CreateUserRequest {
+  email: string;
+  full_name: string;
+  weight_kg: number;
+  height_cm: number;
+  lifestyle: LifestyleGoal;
 }
 
 // ─── API Types ────────────────────────────────────────────────

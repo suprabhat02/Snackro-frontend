@@ -71,21 +71,28 @@ export const spacing = {
 // ─── Border Radius ───────────────────────────────────────────
 
 export const radius = {
-  sm: "6px",
-  md: "12px",
+  xs: "3px",
+  sm: "4px",
+  md: "8px",
+  lg: "12px",
 } as const;
 
 // ─── Shadows ─────────────────────────────────────────────────
+//
+// Prefer border-based elevation over heavy shadows (Tailwind-style).
+// shadow-sm is the only one used — a 1px tinted ring that reads
+// as subtle depth without visual noise.
 
 export const shadows = {
-  soft: "0 2px 8px rgba(43, 36, 32, 0.08)",
+  /** Equivalent to Tailwind's shadow-sm — just a faint ring */
+  sm: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
 } as const;
 
 // ─── Typography ──────────────────────────────────────────────
 
 export const typography = {
   fontFamily: {
-    sans: "'Inter', system-ui, -apple-system, sans-serif",
+    sans: "'DM Sans', system-ui, -apple-system, sans-serif",
     mono: "'JetBrains Mono', 'Fira Code', monospace",
   },
   fontSize: {

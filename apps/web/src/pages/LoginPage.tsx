@@ -1,122 +1,225 @@
 /**
- * Login Page — Google OAuth login screen
+ * Login Page
+ *
+ * Two clear CTAs:
+ *  • "Continue with Google"  — for existing Snackro users
+ *  • "Create a new account"  — sends new users to the /complete-profile wizard
+ *
+ * Theme toggle (light / system / dark) is shown at the top-right corner.
  */
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { GoogleLoginButton, useAuth } from "@snackro/features";
-import { Card, Stack, Typography, Container } from "@snackro/ui";
+import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
+import { AlertTriangle } from "react-feather";
+import { useAuth } from "@snackro/features";
+import { isProfileComplete } from "@snackro/auth-core";
+import { Card, Stack, Typography, Container, Button } from "@snackro/ui";
+import { ThemeToggle } from "../components/ThemeToggle";
+import { SnackroLogo } from "../components/SnackroLogo";
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const { isAuthenticated, isInitialized, error, clearError } = useAuth();
+  const { user, isAuthenticated, isLoading, error, login, clearError } =
+    useAuth();
 
-  // Redirect to dashboard if already authenticated
+  // Redirect once authenticated
   useEffect(() => {
-    if (isAuthenticated && isInitialized) {
-      navigate("/dashboard", { replace: true });
+    if (isAuthenticated && user) {
+      if (isProfileComplete(user)) {
+        navigate("/dashboard", { replace: true });
+      } else {
+        navigate("/complete-profile", { replace: true });
+      }
     }
-  }, [isAuthenticated, isInitialized, navigate]);
+  }, [isAuthenticated, user, navigate]);
+
+  const handleGoogleSuccess = async (response: CredentialResponse) => {
+    if (!response.credential) return;
+    clearError();
+    try {
+      await login(response.credential);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Login failed. Please try again.";
+      window.alert(message);
+    }
+  };
 
   return (
     <div
       style={{
         minHeight: "100vh",
         display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+        flexDirection: "column",
         backgroundColor: "var(--color-bg-primary)",
         padding: "var(--space-4)",
       }}
     >
-      <Container maxWidth="420px">
-        <Card
-          padding="var(--space-7)"
-          style={{ animation: "fadeIn 0.4s ease-out" }}
-        >
-          <Stack gap="var(--space-5)" align="center">
-            {/* Logo */}
-            <div
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: "var(--radius-md)",
-                backgroundColor: "var(--color-orange-500)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: "var(--shadow-soft)",
-              }}
-            >
-              <span
-                style={{
-                  color: "#fff",
-                  fontSize: "var(--font-size-3xl)",
-                  fontWeight: 700,
-                }}
-              >
-                S
-              </span>
-            </div>
+      {/* ── Top bar: theme toggle ── */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          marginBottom: "var(--space-4)",
+        }}
+      >
+        <ThemeToggle />
+      </div>
 
-            <Stack gap="var(--space-2)" align="center">
-              <Typography variant="h2" align="center">
-                SNACKRO
-              </Typography>
-              <Typography
-                variant="body"
-                color="var(--color-text-muted)"
-                align="center"
-              >
-                Sign in to continue to your dashboard
-              </Typography>
-            </Stack>
+      {/* ── Centred card ── */}
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Container maxWidth="440px">
+          <Card padding="var(--space-8)">
+            <Stack gap="var(--space-6)" align="center">
+              {/* Logo + brand */}
+              <Stack gap="var(--space-3)" align="center">
+                <SnackroLogo size={52} />
+                <Stack gap="var(--space-1)" align="center">
+                  <Typography variant="h2" style={{ textAlign: "center" }}>
+                    SNACKRO
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    color="var(--color-text-secondary)"
+                    style={{ textAlign: "center" }}
+                  >
+                    Track your protein. Fuel your goals.
+                  </Typography>
+                </Stack>
+              </Stack>
 
-            {/* Error Display */}
-            {error && (
+              {/* Divider */}
               <div
                 style={{
                   width: "100%",
-                  padding: "var(--space-3)",
-                  backgroundColor: "#fef2f2",
-                  border: "1px solid #fecaca",
-                  borderRadius: "var(--radius-sm)",
-                  color: "var(--color-danger)",
-                  fontSize: "var(--font-size-sm)",
-                  textAlign: "center",
-                  cursor: "pointer",
+                  height: 1,
+                  backgroundColor: "var(--color-border-strong)",
                 }}
-                onClick={clearError}
-                role="alert"
-              >
-                {error}
+              />
+
+              {/* Error banner */}
+              {error && (
                 <div
+                  role="alert"
                   style={{
-                    fontSize: "var(--font-size-xs)",
-                    marginTop: "var(--space-1)",
-                    opacity: 0.7,
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: "var(--space-2)",
+                    padding: "var(--space-3) var(--space-4)",
+                    borderRadius: "var(--radius-sm)",
+                    backgroundColor: "var(--color-error-bg)",
+                    border: "1px solid var(--color-error-border)",
+                    color: "var(--color-error-text)",
+                    fontSize: "var(--font-size-sm)",
                   }}
                 >
-                  Click to dismiss
+                  <AlertTriangle
+                    size={15}
+                    strokeWidth={2}
+                    style={{ flexShrink: 0, marginTop: 1 }}
+                  />
+                  <span>{error}</span>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Google Login Button */}
-            <GoogleLoginButton
-              onSuccess={() => navigate("/dashboard")}
-              onError={(err) => console.error("Login error:", err)}
-            />
+              {/* Existing user: Continue with Google */}
+              <Stack
+                gap="var(--space-2)"
+                align="center"
+                style={{ width: "100%" }}
+              >
+                <Typography
+                  variant="caption"
+                  color="var(--color-text-secondary)"
+                  style={{ textAlign: "center" }}
+                >
+                  Already have an account?
+                </Typography>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    pointerEvents: isLoading ? "none" : "auto",
+                    opacity: isLoading ? 0.6 : 1,
+                  }}
+                >
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={() =>
+                      window.alert("Google sign-in failed. Please try again.")
+                    }
+                    text="continue_with"
+                    shape="rectangular"
+                    theme="outline"
+                    size="large"
+                    width="320"
+                  />
+                </div>
+              </Stack>
 
-            <Typography
-              variant="caption"
-              align="center"
-              color="var(--color-text-muted)"
-            >
-              By continuing, you agree to our Terms of Service
-            </Typography>
-          </Stack>
-        </Card>
-      </Container>
+              {/* Visual separator */}
+              <Stack
+                direction="row"
+                align="center"
+                gap="var(--space-3)"
+                style={{ width: "100%" }}
+              >
+                <div
+                  style={{
+                    flex: 1,
+                    height: 1,
+                    backgroundColor: "var(--color-border-strong)",
+                  }}
+                />
+                <Typography
+                  variant="caption"
+                  color="var(--color-text-secondary)"
+                >
+                  or
+                </Typography>
+                <div
+                  style={{
+                    flex: 1,
+                    height: 1,
+                    backgroundColor: "var(--color-border-strong)",
+                  }}
+                />
+              </Stack>
+
+              {/* New user: Create account */}
+              <Stack
+                gap="var(--space-2)"
+                align="center"
+                style={{ width: "100%" }}
+              >
+                <Typography
+                  variant="caption"
+                  color="var(--color-text-secondary)"
+                  style={{ textAlign: "center" }}
+                >
+                  New to SNACKRO?
+                </Typography>
+                <Button
+                  variant="primary"
+                  style={{ width: "100%" }}
+                  onClick={() => navigate("/complete-profile")}
+                  disabled={isLoading}
+                >
+                  Create a new account
+                </Button>
+              </Stack>
+            </Stack>
+          </Card>
+        </Container>
+      </div>
     </div>
   );
 }

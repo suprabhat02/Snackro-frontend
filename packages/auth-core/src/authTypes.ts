@@ -13,6 +13,8 @@ export type {
   RefreshResponse,
   AuthMeResponse,
   UpdateProfileRequest,
+  CreateUserRequest,
+  LifestyleGoal,
 } from "@snackro/types";
 
 /** Auth state for Redux slice */

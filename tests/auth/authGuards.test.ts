@@ -12,10 +12,13 @@ import type { User } from "@snackro/types";
 const mockUser: User = {
   id: "user-1",
   email: "test@example.com",
-  name: "Test User",
-  picture: "https://example.com/photo.jpg",
-  createdAt: "2025-01-01T00:00:00Z",
-  updatedAt: "2025-01-01T00:00:00Z",
+  full_name: "Test User",
+  daily_protein_target: 120,
+  weight_kg: 70,
+  height_cm: 175,
+  lifestyle: "regular_exercise",
+  created_at: "2025-01-01T00:00:00Z",
+  updated_at: "2025-01-01T00:00:00Z",
 };
 
 describe("authGuards", () => {

@@ -3,6 +3,7 @@ export {
   logout,
   getUserProfile,
   checkUser,
+  createUserProfile,
 } from "./authService";
 export {
   setAccessToken,
@@ -10,7 +11,12 @@ export {
   clearAccessToken,
   hasAccessToken,
 } from "./tokenManager";
-export { isAuthenticated, hasValidEmail, isSessionExpired } from "./authGuards";
+export {
+  isAuthenticated,
+  hasValidEmail,
+  isSessionExpired,
+  isProfileComplete,
+} from "./authGuards";
 export { initialAuthState } from "./authTypes";
 export type { AuthState } from "./authTypes";
 export type {
@@ -24,4 +30,6 @@ export type {
   RefreshResponse,
   AuthMeResponse,
   UpdateProfileRequest,
+  CreateUserRequest,
+  LifestyleGoal,
 } from "./authTypes";

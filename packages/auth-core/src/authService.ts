@@ -5,13 +5,14 @@
  * Access tokens are stored in memory, automatically added to all requests
  */
 import { apiPost, apiGet } from "@snackro/api/axios";
-import type { FetchTokenResponse, User } from "./authTypes";
+import type { FetchTokenResponse, User, CreateUserRequest } from "./authTypes";
 
 const AUTH_ENDPOINTS = {
   FETCH_TOKEN: "/api/v1/auth/fetch/token",
   LOGOUT: "/api/v1/auth/logout",
   CHECK_USER: "/api/v1/auth/check-user",
   ME: "/api/v1/users/me",
+  USERS: "/api/v1/users",
 } as const;
 
 /**
@@ -34,7 +35,8 @@ export async function logout(): Promise<void> {
 }
 
 /**
- * Check authentication status
+ * Check authentication status — used for session restore on app mount.
+ * Does NOT require email param; identity is derived from the Bearer token.
  */
 export async function checkUser(): Promise<{
   authenticated: boolean;
@@ -44,8 +46,20 @@ export async function checkUser(): Promise<{
 }
 
 /**
- * Get current user profile
+ * Get current user profile by email.
+ * Requires a valid access token in memory (set via setAccessToken).
  */
-export async function getUserProfile(): Promise<User> {
-  return apiGet<User>(AUTH_ENDPOINTS.ME);
+export async function getUserProfile(email: string): Promise<User> {
+  return apiGet<User>(AUTH_ENDPOINTS.ME, { params: { email } });
+}
+
+/**
+ * Create user profile after first login.
+ * Called once during onboarding — backend calculates daily_protein_target.
+ * Returns the full UserResponse including the calculated protein target.
+ */
+export async function createUserProfile(
+  data: CreateUserRequest,
+): Promise<User> {
+  return apiPost<User>(AUTH_ENDPOINTS.USERS, data);
 }
