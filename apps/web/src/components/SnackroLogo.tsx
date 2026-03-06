@@ -7,6 +7,7 @@
  * It will be served at /assets/images/snackro-logo.png in production.
  */
 import { useState } from "react";
+import { images } from "../assets/images";
 
 interface SnackroLogoProps {
   size?: number;
@@ -49,7 +50,7 @@ export function SnackroLogo({ size = 40, style }: SnackroLogoProps) {
 
   return (
     <img
-      src="/assets/images/snackro-logo.png"
+      src={images.snackroLogo}
       alt="SNACKRO"
       width={size}
       height={size}

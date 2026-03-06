@@ -107,13 +107,21 @@ apiClient.interceptors.response.use(
 );
 
 // ─── Error Normalizer ────────────────────────────────────────
-function normalizeApiError(error: AxiosError<ApiError>): ApiError {
+function normalizeApiError(
+  error: AxiosError<ApiError & { detail?: string }>,
+): ApiError {
   if (error.response?.data) {
+    const data = error.response.data;
+    // FastAPI surfaces validation/auth errors under `detail`, not `message`
+    const message =
+      data.message ??
+      (typeof data.detail === "string" ? data.detail : undefined) ??
+      "An error occurred";
     return {
       status: error.response.status,
-      message: error.response.data.message ?? "An error occurred",
-      code: error.response.data.code ?? "API_ERROR",
-      details: error.response.data.details,
+      message,
+      code: data.code ?? "API_ERROR",
+      details: data.details,
     };
   }
 

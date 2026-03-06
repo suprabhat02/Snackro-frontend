@@ -25,8 +25,9 @@ import { useAuth } from "@snackro/features";
 import { isProfileComplete } from "@snackro/auth-core";
 import { Card, Stack, Typography, Container, Button } from "@snackro/ui";
 import { ThemeToggle } from "../components/ThemeToggle";
-import { SnackroLogo } from "../components/SnackroLogo";
+
 import { RunningWoman } from "../components/RunningWoman";
+import { SnackroSVGLogo } from "../components/SnackroSVGLogo";
 
 // ─── Animation variants ───────────────────────────────────────
 
@@ -288,15 +289,15 @@ export function LoginPage() {
                       >
                         <Stack gap="var(--space-3)" align="center">
                           <motion.div variants={logoVariant}>
-                            <SnackroLogo size={52} />
+                            <SnackroSVGLogo />
                           </motion.div>
                           <Stack gap="var(--space-1)" align="center">
-                            <Typography
+                            {/* <Typography
                               variant="h2"
                               style={{ textAlign: "center" }}
                             >
                               SNACKRO
-                            </Typography>
+                            </Typography> */}
                             <Typography
                               variant="caption"
                               color="var(--color-text-secondary)"

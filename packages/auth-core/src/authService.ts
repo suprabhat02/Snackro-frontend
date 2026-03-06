@@ -15,16 +15,48 @@ const AUTH_ENDPOINTS = {
   USERS: "/api/v1/users",
 } as const;
 
+// Matches FastAPI/google-auth clock-skew message:
+// "Token used too early, 1234567890 < 1234567893. Check that your computer's clock is set correctly."
+const CLOCK_SKEW_RE = /token used too early[^,]*,\s*(\d+)\s*<\s*(\d+)/i;
+const MAX_CLOCK_SKEW_RETRIES = 3;
+
+function getClockSkewWaitMs(error: unknown): number | null {
+  const msg =
+    error != null && typeof error === "object" && "message" in error
+      ? String((error as { message: unknown }).message)
+      : "";
+  const match = CLOCK_SKEW_RE.exec(msg);
+  if (!match) return null;
+  // skew in ms + 2 s safety buffer, capped at 12 s
+  const skewMs = (parseInt(match[2], 10) - parseInt(match[1], 10)) * 1000;
+  return Math.min(skewMs + 2000, 12_000);
+}
+
 /**
- * Exchange Google ID token for JWT access token
- * This is the primary authentication method
+ * Exchange Google ID token for JWT access token.
+ *
+ * Automatically retries up to MAX_CLOCK_SKEW_RETRIES times when the backend
+ * rejects the token due to clock skew ("Token used too early"). The wait
+ * duration is derived from the timestamps in the error message so recovery
+ * is as fast as possible without blind polling.
  */
 export async function loginWithGoogle(
   idToken: string,
+  _attempt = 0,
 ): Promise<FetchTokenResponse> {
-  return apiPost<FetchTokenResponse>(AUTH_ENDPOINTS.FETCH_TOKEN, {
-    id_token: idToken,
-  });
+  try {
+    return await apiPost<FetchTokenResponse>(AUTH_ENDPOINTS.FETCH_TOKEN, {
+      id_token: idToken,
+    });
+  } catch (error: unknown) {
+    const waitMs =
+      _attempt < MAX_CLOCK_SKEW_RETRIES ? getClockSkewWaitMs(error) : null;
+    if (waitMs !== null) {
+      await new Promise<void>((resolve) => setTimeout(resolve, waitMs));
+      return loginWithGoogle(idToken, _attempt + 1);
+    }
+    throw error;
+  }
 }
 
 /**
