@@ -14,10 +14,10 @@
  *   • Error toast on failed Google login
  *   • Replaces all window.alert() calls
  */
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import type { Variants } from "framer-motion";
 import toast from "react-hot-toast";
 import { AlertTriangle } from "react-feather";
@@ -28,6 +28,7 @@ import { ThemeToggle } from "../components/ThemeToggle";
 
 import { RunningWoman } from "../components/RunningWoman";
 import { SnackroSVGLogo } from "../components/SnackroSVGLogo";
+import { FullscreenLoader } from "../components/FullscreenLoader";
 
 // ─── Animation variants ───────────────────────────────────────
 
@@ -88,6 +89,7 @@ export function LoginPage() {
   const shouldReduce = useReducedMotion();
   const { user, isAuthenticated, isLoading, error, login, clearError } =
     useAuth();
+  const [isSigningIn, setIsSigningIn] = useState(false);
 
   // Show Redux-level auth error as toast
   useEffect(() => {
@@ -111,9 +113,12 @@ export function LoginPage() {
   const handleGoogleSuccess = async (response: CredentialResponse) => {
     if (!response.credential) return;
     clearError();
+    setIsSigningIn(true);
     try {
       await login(response.credential);
+      // Keep overlay up until the navigation useEffect fires
     } catch (err) {
+      setIsSigningIn(false);
       const message =
         err instanceof Error ? err.message : "Login failed. Please try again.";
       toast.error(message);
@@ -127,7 +132,25 @@ export function LoginPage() {
         @media (max-width: 768px) {
           .snackro-login-left { display: none !important; }
         }
+        @keyframes snackro-spin {
+          to { transform: rotate(360deg); }
+        }
       `}</style>
+
+      {/* ── Full-screen auth loader ── */}
+      <AnimatePresence>
+        {(isSigningIn || isLoading) && (
+          <motion.div
+            key="auth-loading-overlay"
+            initial={shouldReduce ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <FullscreenLoader label="Signing you in…" />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <motion.div
         initial={shouldReduce ? false : { opacity: 0 }}

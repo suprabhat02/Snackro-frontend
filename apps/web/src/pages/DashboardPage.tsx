@@ -41,6 +41,7 @@ import { useAuth } from "@snackro/features";
 import { Button, Card, Stack, Typography, Container } from "@snackro/ui";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { SnackroLogo } from "../components/SnackroLogo";
+import { FoodPhotoUpload } from "../components/FoodPhotoUpload";
 
 // ─── Type shorthand ────────────────────────────────────────────
 
@@ -238,6 +239,20 @@ const comingSoonItem = {
     y: 0,
     opacity: 1,
     transition: { type: "spring" as const, stiffness: 260, damping: 22 },
+  },
+};
+
+const wrapperReveal = {
+  hidden: { y: 18, opacity: 0 },
+  show: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: "spring" as const,
+      stiffness: 280,
+      damping: 24,
+      delay: 0.18,
+    },
   },
 };
 
@@ -561,6 +576,11 @@ export function DashboardPage() {
                   )}
                 </Stack>
               </div>
+            </motion.div>
+
+            {/* ── Meal scan ── */}
+            <motion.div {...gate} variants={shouldReduce ? {} : wrapperReveal}>
+              <FoodPhotoUpload />
             </motion.div>
 
             {/* ── Body metrics ── */}
